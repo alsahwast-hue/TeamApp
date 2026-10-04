@@ -109,7 +109,7 @@
   #login { padding: 40px 30px; }
   #login h2 { text-align: center; margin-bottom: 25px; color: #1e3c72; }
 
-  .field { margin-bottom: 18px; }
+  .field { margin-bottom: 5px; }
   .field label { display: block; margin-bottom: 6px; font-weight: 600; color: #333; }
   .field input, .field select, .field textarea {
     width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 10px;
@@ -324,7 +324,7 @@
   }
   .booking-title {
   display: flex; align-items: center; justify-content: center;
-  gap: 12px; margin-bottom: 20px;
+  gap: 12px; margin-bottom: 5px;
 }
 .booking-title h2 { margin: 0 !important; }
 .title-logo {
@@ -594,6 +594,7 @@
   gap: 10px;
   color: #fff;
 }
+body.has-install-bar #bookConfirmBar { bottom: 62px; }
 #installBar.show { display: flex; }
 #installBar .install-text { font-size: 13px; font-weight: 600; }
 #installBar .install-btn {
@@ -603,6 +604,74 @@
   font-family: 'Cairo', sans-serif; font-size: 14px;
 }
 body.has-install-bar { padding-bottom: 80px; }
+/* ===== شعارات أصغر ومرفوعة لأعلى ===== */
+#booking { max-width: 640px; padding: 10px 16px 20px; }
+.booking-title { gap: 8px; margin-bottom: 8px; margin-top: -4px; align-items: flex-start; }
+.booking-title h2 { font-size: 18px; align-self: center; }
+
+/* ===== حاويات الأيام ===== */
+.calendar {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px; padding: 5px; background: #f5f7fa; border-radius: 12px;
+}
+.calendar-empty { grid-column: 1 / -1; }
+.cal-card { border: 2px solid #0b6fc2; border-radius: 12px; background: #fff; overflow: hidden; }
+.cal-card-head { background: #0b6fc2; color: #fff; text-align: center; padding: 6px 4px; line-height: 1.2; }
+.cal-card-head .d { font-size: 20px; font-weight: 700; }
+.cal-card-head .n { font-size: 16px; font-weight: 700; }
+.cal-slots { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 10px; }
+.slot-btn {
+  width: calc(50% - 4px); padding: 8px 4px; border: 1px solid #008a3c; border-radius: 2px;
+  font-family: 'Cairo', sans-serif; font-size: 12px; text-align: center; line-height: 1.4;
+  cursor: pointer; transition: .15s; color: #fff; background: #00b050;
+}
+.slot-btn b { display: block; font-size: 13px; direction: ltr; }
+.slot-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,176,80,.4); }
+.slot-btn.booked { background: #a6a6a6; border-color: #7f7f7f; cursor: not-allowed; }
+.slot-btn.booked b { text-decoration: line-through; }
+.slot-btn.selected { background: #f0b90b; color: #000; border-color: #d4a017; box-shadow: 0 0 0 3px rgba(240,185,11,.35); }
+
+/* ===== بيانات تأكيد الحجز في عمودين ===== */
+.confirm-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.cm-item {
+  background: #f5f7fa; border-radius: 8px; padding: 8px 10px;
+  display: flex; flex-direction: column; gap: 2px; min-width: 0;
+}
+.cm-item span { color: #000000; font-weight: 600; font-size: 12px; }
+.cm-item strong {
+  color: #06358d; font-size: 14px; font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.cm-item.full { grid-column: 1 / -1; background: #fffbe6; border: 1px solid #f0b90b; text-align: center; }
+.cm-item.full strong { font-size: 18px; }
+/* ===== قائمة عدد الأعمدة ===== */
+.date-row { display: flex; align-items: center; gap: 6px; }
+.date-row input[type="date"] { flex: 1; min-width: 0; }
+.date-row .btn.small { flex: 0 0 auto; }
+.date-row select {
+  flex: 0 0 auto; width: auto;
+  padding: 11px 8px; border: 2px solid #e0e0e0; border-radius: 10px;
+  font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 600;
+  background: #fff; color: #1e3c72; cursor: pointer;
+}
+.date-row select:focus { border-color: #2a5298; outline: none; }
+
+/* عدد الأعمدة يتحكم به المتغير --cols */
+.calendar { grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)) !important; }
+
+/* عند 3 و4 أعمدة تصبح الأوقات واحداً تحت الآخر ليتسع النص */
+.calendar[data-cols="3"] .slot-btn,
+.calendar[data-cols="4"] .slot-btn { width: 100%; }
+.calendar[data-cols="3"] .cal-card-head .d,
+.calendar[data-cols="4"] .cal-card-head .d { font-size: 15px; }
+.calendar[data-cols="3"] .cal-card-head .n,
+.calendar[data-cols="4"] .cal-card-head .n { font-size: 13px; }
+.calendar[data-cols="4"] .slot-btn { font-size: 11px; padding: 6px 2px; }
+.calendar[data-cols="4"] .slot-btn b { font-size: 11px; }
+
+
 </style>
 </head>
 <body>
@@ -695,24 +764,24 @@ body.has-install-bar { padding-bottom: 80px; }
   <div class="info-line" style="display:none"><span>رقم المستخدم:</span><span id="userId" style="display:none">-</span></div>
   <div class="info-line" style="display:none"><span>اسم المستخدم:</span><span id="userName" style="display:none">-</span></div>
 
-  <div class="field">
-    <label>📅 اختر التاريخ</label>
+<div class="field">
+  <label>📅 اختر التاريخ</label>
+  <div class="date-row">
     <input type="date" id="bookDate" onchange="onDateChange()">
+  <select id="calCols" onchange="setCalCols(this.value)" title="عدد الأعمدة">
+      <option value="1">1 عمود</option>
+      <option value="2" selected>2 عمودان</option>
+      <option value="3">3 أعمدة</option>
+      <option value="4">4 أعمدة</option>
+    </select>
+       <button class="btn small red" onclick="document.getElementById('bookDate').value='';onDateChange();">✖</button>
+   
   </div>
+</div>
 
   <div class="field">
-    <label>🕒اختر- الأوقات المتاحة</label>
     <div id="calendar" class="calendar">
-      <div class="calendar-empty">اختر تاريخاً لعرض الأوقات المتاحة</div>
     </div>
-  </div>
-
-  <div class="selected-slot-info" id="selectedSlotInfo" style="display:none">
-    <div class="info-line"><span>اليوم:</span><span id="selDay">-</span></div>
-    <div class="info-line"><span>التاريخ:</span><span id="selDate">-</span></div>
-    <div class="info-line"><span>من الساعة:</span><span id="selFrom">-</span></div>
-    <div class="info-line"><span>إلى الساعة:</span><span id="selTo">-</span></div>
-    <div class="info-line"><span>المبلغ:</span><span id="selCost">-</span></div>
   </div>
 
   <input type="hidden" id="slotSelect">
@@ -724,7 +793,6 @@ body.has-install-bar { padding-bottom: 80px; }
   <div class="field" style="margin-top:14px">
     <textarea id="note" rows="2" style="display: none;"></textarea>
   </div>
-  <button class="btn gold" onclick="submitBooking()">تأكيد الحجز</button>
   <div id="bookMsg"></div>
 </div>
 
@@ -1001,11 +1069,42 @@ body.has-install-bar { padding-bottom: 80px; }
   </div>
 </div>
 
+
+<!-- ============ نافذة تأكيد الحجز ============ -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <h3>📝 بيانات الحجز</h3>
+      <button class="close-btn" onclick="cancelConfirmModal()">✖</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="confirm-grid">
+        <div class="cm-item"><span>الاسم</span><strong id="cmName">-</strong></div>
+        <div class="cm-item"><span>الهاتف</span><strong id="cmPhone" style="direction:ltr">-</strong></div>
+        <div class="cm-item"><span>اليوم</span><strong id="cmDay">-</strong></div>
+        <div class="cm-item"><span>التاريخ</span><strong id="cmDate">-</strong></div>
+        <div class="cm-item"><span>من الساعة</span><strong id="cmFrom">-</strong></div>
+        <div class="cm-item"><span>إلى الساعة</span><strong id="cmTo">-</strong></div>
+        <div class="cm-item full"><span>المبلغ</span><strong id="cmCost">-</strong></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-top:16px;">
+        <button class="btn green" onclick="submitBooking()">✅ تأكيد الحجز</button>
+        <button class="btn red" onclick="cancelConfirmModal()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ============ شريط تثبيت التطبيق ============ -->
 <div id="installBar">
   <span class="install-text" id="installText"></span>
   <button class="install-btn" id="installBtn">تثبيت التطبيق📲</button>
 </div>
+
+
+
 
 <script>
 /* ============================================================
@@ -1122,6 +1221,7 @@ async function login() {
   }
 
   show('loading');
+  const slotsPromise = loadSlots();
   try {
     const res = await fetch(USER_API, {
       method: 'POST',
@@ -1130,6 +1230,7 @@ async function login() {
     const data = await res.json();
 
     if (data.success) {
+      await slotsPromise;  
       finishLogin(data, phone, password);
     } else if (data.needsRegistration) {
       show('login');
@@ -1199,6 +1300,7 @@ async function completeRegistration() {
   }
 
   show('loading');
+  const slotsPromise = loadSlots();  
   try {
     const res = await fetch(USER_API, {
       method: 'POST',
@@ -1207,6 +1309,7 @@ async function completeRegistration() {
     const data = await res.json();
 
     if (data.success) {
+      await slotsPromise;
       cancelRegistration();            // أعد الشاشة لوضعها الطبيعي
       finishLogin(data, phone, password);
     } else {
@@ -1247,7 +1350,6 @@ function restoreSession(u) {
   }
 
   show('booking');
-  loadSlots();
 }
 
 function logout() {
@@ -1328,96 +1430,112 @@ function to24Input(t) {
 }
 
 /* ============ جلب الأوقات من السيرفر ============ */
-async function loadSlots() {
-  try {
-    const res = await fetch(RESERVE_API + '?action=list');
-    const data = await res.json();
-    if (data.success) {
-      allSlotsCache = data.rows || [];
-    } else {
-      allSlotsCache = [];
-    }
-  } catch (e) {
-    console.warn('خطأ في تحميل الأوقات:', e);
-    allSlotsCache = [];
-  }
+const DAYS_AR = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+const SHOW_PAST_DAYS = false;   // true = إظهار الأيام الماضية أيضاً
 
-  const dateVal = document.getElementById('bookDate') ? document.getElementById('bookDate').value : '';
-  if (dateVal) renderCalendar();
+function fmtDMY(s) { const [y, m, d] = s.split('-'); return `${+d}/${+m}/${y}`; }
+
+function loadSlots() {
+  return fetch(RESERVE_API + '?action=list&t=' + Date.now())
+    .then(r => r.json())
+    .then(data => { if (data.success) allSlotsCache = data.rows || []; })
+    .catch(e => console.warn('خطأ في تحميل الأوقات:', e))
+    .then(() => renderCalendar());
 }
+
+async function silentRefreshSlots() {
+  if (!currentUser || document.hidden) return;
+  if (!document.getElementById('booking').classList.contains('active')) return;
+  try {
+    const res = await fetch(RESERVE_API + '?action=list&t=' + Date.now());
+    const data = await res.json();
+    if (!data.success) return;
+    allSlotsCache = data.rows || [];
+
+    // إذا صار الوقت المختار محجوزاً من شخص آخر
+    if (selectedSlot) {
+      const cur = allSlotsCache.find(s => String(s.ResID) === String(selectedSlot.ResID));
+    if (!cur || String(cur.ResShow).trim() !== 'متاح') {
+  closeConfirmModal();          // ← أضف هذا السطر
+  clearSelectedSlot();
+  document.getElementById('bookMsg').innerHTML =
+    '<div class="error-msg">الوقت الذي اخترته تم حجزه، اختر وقتاً آخر</div>';
+}
+    }
+    renderCalendar();
+  } catch (e) { console.warn('فشل التحديث الصامت:', e); }
+}
+setInterval(silentRefreshSlots, 60000);
 
 /* ============ عرض الأوقات للتاريخ المختار فقط ============ */
 function renderCalendar() {
   const calBox = document.getElementById('calendar');
-  const dateInput = document.getElementById('bookDate').value;
+  const filter = document.getElementById('bookDate').value;
+  const todayStr = toDateStr(new Date());
 
-  if (!dateInput) {
-    calBox.innerHTML = '<div class="calendar-empty">اختر تاريخاً لعرض الأوقات المتاحة</div>';
-    // ✅ إخفاء التفاصيل عند مسح التاريخ
-    clearSelectedSlot();
+  // تجميع الأوقات حسب التاريخ
+  const groups = {};
+  allSlotsCache.forEach(s => {
+    const d = normalizeDate(s.ResDate);
+    if (!d) return;
+    if (filter) { if (d !== filter) return; }
+    else if (!SHOW_PAST_DAYS && d < todayStr) return;
+    (groups[d] = groups[d] || []).push(s);
+  });
+
+  const dates = Object.keys(groups).sort();
+  if (!dates.length) {
+    calBox.innerHTML = `<div class="calendar-empty">${
+      filter ? 'لا توجد أوقات بتاريخ ' + fmtDMY(filter) : 'لا توجد أوقات متاحة حالياً'}</div>`;
     return;
   }
 
-  // ✅ إذا كان التاريخ المختار مختلفاً عن التاريخ الحالي للـ selectedSlot → ألغِ الاختيار
-  if (selectedSlot && selectedSlot.dateStr !== dateInput) {
-    clearSelectedSlot();
-  }
+  let html = '';
+  dates.forEach(d => {
+    const slots = groups[d].sort((a, b) =>
+      (to24(a.ResTimeFrom) || '').localeCompare(to24(b.ResTimeFrom) || ''));
+    const isPast = d < todayStr;
+    const dayName = DAYS_AR[new Date(d + 'T00:00:00').getDay()];
 
-  const daysAr = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-  const selectedDate = new Date(dateInput + 'T00:00:00');
-  const dayName = daysAr[selectedDate.getDay()];
-  const dateStr = dateInput;
+    html += `<div class="cal-card">
+      <div class="cal-card-head"><div class="d">${fmtDMY(d)}</div><div class="n">${dayName}</div></div>
+      <div class="cal-slots">`;
 
-  // فلترة الأوقات
-  let daySlots = allSlotsCache.filter(s => {
-    const sDate = s.ResDate ? String(s.ResDate).trim() : '';
-    if (sDate) return sDate === dateStr;
-    return String(s.ResDay).trim() === dayName;
+    slots.forEach(s => {
+      const available = String(s.ResShow).trim() === 'متاح';
+      const disabled = !available || isPast;
+      const isSel = selectedSlot && String(selectedSlot.ResID) === String(s.ResID) && selectedSlot.dateStr === d;
+      const from = String(s.ResTimeFrom || '').replace(/\s/g, '');
+      const to = String(s.ResTimeTO || s.ResTimeTo || '').replace(/\s/g, '');
+
+      html += `<button class="slot-btn ${disabled ? 'booked' : ''} ${isSel ? 'selected' : ''}"
+        ${disabled ? 'disabled' : ''} onclick="pickSlot('${s.ResID}','${d}')">
+        <b>${from}-${to}</b><span>${s.ResCost} ر.ع</span></button>`;
+    });
+
+    html += `</div></div>`;
   });
 
-  if (!daySlots.length) {
-    calBox.innerHTML = `<div class="calendar-empty">لا توجد أوقات متاحة في ${dateStr} (${dayName})</div>`;
-    return;
-  }
-
-  // ترتيب الأوقات
-  daySlots.sort((a, b) => {
-    const ta = to24(a.ResTimeFrom) || '';
-    const tb = to24(b.ResTimeFrom) || '';
-    return ta.localeCompare(tb);
-  });
-
-  const today = new Date(); today.setHours(0,0,0,0);
-  const isPast = selectedDate < today;
-
-  let html = `<div class="cal-day">
-    <div class="cal-day-title">📅 ${dateStr} — ${dayName}</div>`;
-
-  daySlots.forEach(s => {
-    const isAvailable = String(s.ResShow).trim() === 'متاح';
-    const disabled = !isAvailable || isPast;
-
-    const isSelected = selectedSlot &&
-                       String(selectedSlot.ResID) === String(s.ResID) &&
-                       selectedSlot.dateStr === dateStr;
-
-    let cls = disabled ? 'booked' : 'available';
-    if (isSelected) cls += ' selected';
-
-    const timeTo = s.ResTimeTO || s.ResTimeTo || '';
-    const label = `${s.ResTimeFrom} - ${timeTo}<br><small>${s.ResCost} ر.ع</small>`;
-
-    html += `<button class="cal-slot ${cls}"
-      ${disabled ? 'disabled' : ''}
-      onclick="pickSlot('${s.ResID}','${dateStr}')"
-      title="${disabled ? 'غير متاح' : 'اضغط للحجز'}">
-      ${label}
-    </button>`;
-  });
-
-  html += '</div>';
   calBox.innerHTML = html;
 }
+
+function onDateChange() { renderCalendar(); }
+
+/* ===== عدد أعمدة حاويات الأيام (1 - 4) ===== */
+function setCalCols(n) {
+  n = Math.min(4, Math.max(1, parseInt(n, 10) || 2));
+  const cal = document.getElementById('calendar');
+  cal.style.setProperty('--cols', n);
+  cal.dataset.cols = n;
+  document.getElementById('calCols').value = n;
+  try { localStorage.setItem('calCols', n); } catch (e) {}
+}
+
+(function initCalCols() {
+  let n = 2;
+  try { n = parseInt(localStorage.getItem('calCols'), 10) || 2; } catch (e) {}
+  setCalCols(n);
+})();
 
 /* ============ مسح الحجز المختار ============ */
 function clearSelectedSlot() {
@@ -1459,37 +1577,56 @@ function pickSlot(resId, dateStr) {
     return;
   }
 
+  const timeTo = slot.ResTimeTO || slot.ResTimeTo || '';
+
   selectedSlot = {
-    ResID: slot.ResID,
-    day: slot.ResDay,
-    from: slot.ResTimeFrom,
-    to: slot.ResTimeTO || slot.ResTimeTo,
-    cost: slot.ResCost,
-    dateStr: dateStr
+    ResID: slot.ResID, day: slot.ResDay,
+    from: slot.ResTimeFrom, to: timeTo,
+    cost: slot.ResCost, dateStr: dateStr
   };
 
   document.getElementById('slotSelect').value = slot.ResID;
   document.getElementById('bookDay').value    = slot.ResDay;
   document.getElementById('timeFrom').value   = slot.ResTimeFrom;
-  document.getElementById('timeTo').value     = slot.ResTimeTO || slot.ResTimeTo;
+  document.getElementById('timeTo').value     = timeTo;
   document.getElementById('cost').value       = slot.ResCost;
 
-  const dateObj = new Date(dateStr + 'T00:00:00');
   const daysAr = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-  const niceDate = `${dateStr} (${daysAr[dateObj.getDay()]})`;
+  const dayName = daysAr[new Date(dateStr + 'T00:00:00').getDay()];
 
-  document.getElementById('selectedSlotInfo').style.display = 'block';
-  document.getElementById('selDay').textContent  = slot.ResDay;
-  document.getElementById('selDate').textContent = niceDate;
-  document.getElementById('selFrom').textContent = slot.ResTimeFrom;
-  document.getElementById('selTo').textContent   = slot.ResTimeTO || slot.ResTimeTo;
-  document.getElementById('selCost').textContent = slot.ResCost + ' ر.ع';
+  document.getElementById('cmName').textContent  = currentUser ? currentUser.name : '-';
+  document.getElementById('cmPhone').textContent = currentUser ? currentUser.phone : '-';
+  document.getElementById('cmDay').textContent   = dayName;
+  document.getElementById('cmDate').textContent  = fmtDMY(dateStr);
+  document.getElementById('cmFrom').textContent  = slot.ResTimeFrom;
+  document.getElementById('cmTo').textContent    = timeTo;
+  document.getElementById('cmCost').textContent  = slot.ResCost + ' ر.ع';
 
+  document.getElementById('bookMsg').innerHTML = '';
+  document.getElementById('confirmModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
   renderCalendar();
 }
 
+function closeConfirmModal() {
+  document.getElementById('confirmModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+/* زر الإلغاء: يغلق النافذة ويلغي اختيار الوقت */
+function cancelConfirmModal() {
+  closeConfirmModal();
+  clearSelectedSlot();
+  renderCalendar();
+}
+
+document.getElementById('confirmModal').addEventListener('click', function (e) {
+  if (e.target === this) cancelConfirmModal();
+});
+
 /* ============ إرسال الحجز ============ */
 async function submitBooking() {
+  closeConfirmModal();  
   const user = currentUser;   // ← بدلاً من localStorage
   const slotId = document.getElementById('slotSelect').value;
   const date = selectedSlot ? selectedSlot.dateStr : document.getElementById('bookDate').value;
@@ -1538,10 +1675,10 @@ async function submitBooking() {
       });
     }
 
-    show('booking');
-    if (data.success) {
-      document.getElementById('bookMsg').innerHTML =
-        `<div class="success-msg">✅ تم الحجز بنجاح<br>رقم الطلب: ${data.regNo}</div>`;
+ if (data.success) {
+  document.getElementById('bookMsg').innerHTML =
+    `<div class="success-msg">✅ تم الحجز بنجاح<br>رقم الطلب: ${data.regNo}</div>`;
+  document.getElementById('bookMsg').scrollIntoView({ behavior: 'smooth', block: 'center' });
 
       document.getElementById('slotSelect').value = '';
       document.getElementById('bookDate').value = '';
@@ -1556,7 +1693,6 @@ async function submitBooking() {
       document.getElementById('calendar').innerHTML =
         '<div class="calendar-empty">اختر تاريخاً لعرض الأوقات المتاحة</div>';
 
-      loadSlots();
     } else {
       document.getElementById('bookMsg').innerHTML = `<div class="error-msg">${data.message}</div>`;
     }
