@@ -580,6 +580,7 @@
 }
 #admin .topbar .btn.small { padding: 5px 6px; font-size: 11px; }
 /* ===== زر تثبيت التطبيق (أسفل النافذة) ===== */
+/* ===== زر تثبيت التطبيق (أسفل النافذة) ===== */
 #installBar {
   display: none;
   position: fixed;
@@ -587,8 +588,7 @@
   z-index: 2000;
   padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
   background: linear-gradient(135deg, #0f2027, #2c5364);
-  border-top: 3px solid #f0b90b;
-  box-shadow: 0 -6px 20px rgba(0,0,0,.35);
+  box-shadow: none;
   align-items: center;
   justify-content: center;
   gap: 10px;
@@ -602,12 +602,7 @@
   padding: 9px 18px; font-weight: 700; cursor: pointer;
   font-family: 'Cairo', sans-serif; font-size: 14px;
 }
-#installBar .install-close {
-  background: rgba(255,255,255,.2); color: #fff; border: none;
-  width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 14px;
-}
 body.has-install-bar { padding-bottom: 80px; }
-
 </style>
 </head>
 <body>
@@ -1008,9 +1003,8 @@ body.has-install-bar { padding-bottom: 80px; }
 
 <!-- ============ شريط تثبيت التطبيق ============ -->
 <div id="installBar">
-  <span class="install-text" id="installText">📲 ثبّت التطبيق على جهازك</span>
-  <button class="install-btn" id="installBtn">تثبيت</button>
-  <button class="install-close" onclick="hideInstallBar(true)">✖</button>
+  <span class="install-text" id="installText"></span>
+  <button class="install-btn" id="installBtn">تثبيت التطبيق📲</button>
 </div>
 
 <script>
@@ -3903,15 +3897,13 @@ const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
 
 function showInstallBar() {
   if (isStandalone()) return;
-  if (sessionStorage.getItem('installDismissed') === '1') return;
   document.getElementById('installBar').classList.add('show');
   document.body.classList.add('has-install-bar');
 }
 
-function hideInstallBar(remember) {
+function hideInstallBar() {
   document.getElementById('installBar').classList.remove('show');
   document.body.classList.remove('has-install-bar');
-  if (remember) sessionStorage.setItem('installDismissed', '1');
 }
 
 // أندرويد / كروم / إيدج
