@@ -450,7 +450,7 @@
 .bookings-table select.state-select {
   font-family: 'Cairo', sans-serif; font-size: 11px; padding: 5px 3px;
   border-radius: 6px; border: 1px solid #d4a017; background: #fff;
-  font-weight: 700; cursor: pointer; width: 100%;
+  font-weight: 700; cursor: pointer; min-width: 80px;
 }
 .bookings-table select.state-select.pending  { background: #fff3cd; color: #856404; border-color: #ffc107; }
 .bookings-table select.state-select.confirmed{ background: #d4edda; color: #155724; border-color: #28a745; }
@@ -1208,7 +1208,32 @@ body.has-install-bar { padding-bottom: 80px; }
   <button class="install-btn" id="installBtn">تثبيت التطبيق📲</button>
 </div>
 
-
+<!-- ============ نافذة إرسال الواتس اب ============ -->
+<div class="modal-overlay" id="waModal">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header">
+      <h3>💬 إرسال عبر الواتس اب</h3>
+      <button class="close-btn" onclick="closeWaModal()">✖</button>
+    </div>
+    <div class="modal-body">
+      <div class="reg-note" style="margin-bottom:10px;">
+        هل تريد إرسال الطلب إلى المستخدم بالواتس اب؟
+      </div>
+      <div class="info-line">
+        <span>إلى:</span>
+        <span id="waTo" style="direction:ltr">-</span>
+      </div>
+      <div class="field">
+        <label>نص الرسالة (يمكنك تعديله)</label>
+        <textarea id="waText" rows="9"></textarea>
+      </div>
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-top:14px;">
+        <button class="btn green" onclick="sendWhatsApp()">✅ نعم، إرسال</button>
+        <button class="btn red" onclick="closeWaModal()">لا</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 
 <script>
@@ -3136,7 +3161,6 @@ let bookingsSearchState = '';
 function openBookingsModal() {
   document.getElementById('bookingsModal').classList.add('active');
   document.body.style.overflow = 'hidden';
-  if (!bookingsLoaded) loadBookings();
   loadBookings();
 }
 
@@ -3149,15 +3173,34 @@ document.getElementById('bookingsModal').addEventListener('click', function(e) {
   if (e.target === this) closeBookingsModal();
 });
 
+async function fetchJSON(url, options, retries = 2) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, options);
+      const text = await res.text();
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        if (attempt === retries) {
+          throw new Error('السيرفر مشغول حالياً، حاول مرة أخرى بعد قليل');
+        }
+        await new Promise(r => setTimeout(r, 800 * (attempt + 1)));
+      }
+    } catch (e) {
+      if (attempt === retries) throw e;
+      await new Promise(r => setTimeout(r, 800 * (attempt + 1)));
+    }
+  }
+}
+
 function loadBookings() {
   const box = document.getElementById('bookingsList');
   box.innerHTML = '<div class="spinner" style="margin:20px auto"></div>';
 
-  fetch(REGISTER_API + '?action=listBookings')
-    .then(r => r.json())
+  fetchJSON(REGISTER_API + '?action=listBookings&t=' + Date.now())
     .then(data => {
       if (!data.success) {
-        box.innerHTML = `<div class="error-msg">${data.message}</div>`;
+        box.innerHTML = `<div class="error-msg">${escAttr(data.message)}</div>`;
       } else {
         bookingsRowsCache = data.rows || [];
         bookingsLoaded = true;
@@ -3165,7 +3208,7 @@ function loadBookings() {
       }
     })
     .catch(e => {
-      box.innerHTML = `<div class="error-msg">خطأ: ${e.message}</div>`;
+      box.innerHTML = `<div class="error-msg">خطأ: ${escAttr(e.message)}</div>`;
     });
 }
 
@@ -3284,6 +3327,13 @@ function renderBookingsTable(rows) {
   box.innerHTML = html;
 }
 
+/* ============ اقتراحات الملاحظة حسب الحالة ============ */
+const NOTE_SUGGESTIONS = {
+  'تم الحجز': 'تم تأكيد الحجز، الرجاء إرسال إيصال الدفع على الرقم: ',
+  'ملغي':     'نعتذر عن إلغاء الحجز بسبب: ',
+  'في الإجراء': ''
+};
+
 function onBookingStateChange(regId, selEl) {
   selEl.classList.remove('pending', 'confirmed', 'cancelled');
   if (selEl.value === 'تم الحجز') selEl.classList.add('confirmed');
@@ -3294,15 +3344,27 @@ function onBookingStateChange(regId, selEl) {
   const btn = document.getElementById('saveBk_' + regId);
   if (btn) btn.disabled = !changed;
 
-  // أظهر حقل الملاحظة عند تغيير الحالة، وأخفِه عند الرجوع للأصلية
   const noteEl = document.getElementById('bkNote_' + regId);
   if (noteEl) {
     if (changed) {
       noteEl.classList.add('show');
+
+      // املأ الاقتراح فقط إذا كان الحقل فارغاً أو يحتوي على اقتراح سابق لم يُعدَّل
+      const current = noteEl.value.trim();
+      const isSuggestion = Object.values(NOTE_SUGGESTIONS)
+        .some(s => s && current === s.trim());
+
+      if (!current || isSuggestion) {
+        noteEl.value = NOTE_SUGGESTIONS[selEl.value] || '';
+      }
+
       noteEl.focus();
+      // ضع المؤشر في نهاية النص ليكتب المدير مباشرة بعده
+      const len = noteEl.value.length;
+      noteEl.setSelectionRange(len, len);
     } else {
       noteEl.classList.remove('show');
-      noteEl.value = noteEl.dataset.original;   // تجاهل أي نص لم يُحفظ
+      noteEl.value = noteEl.dataset.original;
     }
   }
 }
@@ -3337,7 +3399,7 @@ async function saveBookingState(regId, btnEl) {
     });
     const data = await res.json();
 
-    if (data.success) {
+if (data.success) {
       ok = true;
       const row = bookingsRowsCache.find(r => String(r.RegID) === String(regId));
       const prevState = selEl.dataset.original;
@@ -3348,7 +3410,7 @@ async function saveBookingState(regId, btnEl) {
         noteEl.dataset.original = newNote;
         noteEl.value = newNote;
         noteEl.classList.remove('show');   // أغلق الحقل بعد الحفظ
-      }
+      }   // ← يُغلق الـ if هنا
 
       if (row) {
         if (newState === 'ملغي') {
@@ -3356,6 +3418,11 @@ async function saveBookingState(regId, btnEl) {
         } else if (prevState === 'ملغي') {
           await bookSlotForBooking(row);
         }
+      }
+
+      // اعرض نافذة الواتس اب عند "تم الحجز" أو "ملغي"
+      if (row && (newState === 'تم الحجز' || newState === 'ملغي')) {
+        offerWhatsApp(row, newState, newNote);
       }
     } else {
       alert('خطأ: ' + data.message);
@@ -3370,6 +3437,63 @@ async function saveBookingState(regId, btnEl) {
     btnEl.disabled = ok || (selEl.value === selEl.dataset.original);
   }
 }
+
+/* ============================================================
+   إرسال الطلب عبر الواتس اب
+   ============================================================ */
+const WA_COUNTRY_CODE = '968';   // رمز الدولة (عُمان). غيّره عند الحاجة
+let waPending = null;
+
+/* تحويل الرقم لصيغة دولية: 9XXXXXXX → 9689XXXXXXX */
+function waNormalizePhone(raw) {
+  let d = String(raw || '').replace(/\D/g, '');
+  if (d.startsWith('00')) d = d.slice(2);
+  if (d.length <= 8) d = WA_COUNTRY_CODE + d;
+  return d;
+}
+
+function buildWaMessage(row, state, note) {
+  const lines = [];
+  lines.push(`السلام عليكم ${row.RegUserName || ''}،`);
+  lines.push('');
+  lines.push(`📋 رقم الطلب: ${row.RegNo || '-'}`);
+  lines.push(`📅 التاريخ: ${normalizeDate(row.RegDate) || '-'} (${row.Regday || '-'})`);
+  lines.push(`⏰ من: ${row.RegTimeFrom || '-'}  إلى: ${row.RegTimeTo || '-'}`);
+  lines.push(`💰 المبلغ: ${row.RegCost || '-'} ر.ع`);
+  lines.push(`📌 الحالة: ${state}`);
+  if (note) {
+    lines.push('');
+    lines.push(note);
+  }
+  return lines.join('\n');
+}
+
+function offerWhatsApp(row, state, note) {
+  const phone = waNormalizePhone(row.RegUserTel);
+  if (phone.length < 8) return;   // لا يوجد رقم صالح
+
+  waPending = { phone };
+  document.getElementById('waTo').textContent = '+' + phone;
+  document.getElementById('waText').value = buildWaMessage(row, state, note);
+  document.getElementById('waModal').classList.add('active');
+}
+
+function sendWhatsApp() {
+  if (!waPending) return;
+  const text = document.getElementById('waText').value.trim();
+  const url = `https://wa.me/${waPending.phone}?text=${encodeURIComponent(text)}`;
+  window.open(url, '_blank');
+  closeWaModal();
+}
+
+function closeWaModal() {
+  document.getElementById('waModal').classList.remove('active');
+  waPending = null;
+}
+
+document.getElementById('waModal').addEventListener('click', function (e) {
+  if (e.target === this) closeWaModal();
+});
 
 function escAttr(v) {
   return String(v == null ? '' : v)
@@ -3670,6 +3794,8 @@ function renderMyBookings() {
     if (state === 'تم الحجز') cls = 'confirmed';
     else if (state === 'ملغي') cls = 'cancelled';
 
+    const note = String(r.RegNote || '').trim();
+
     html += `<tr>
       <td><strong>${escAttr(r.RegNo || '-')}</strong></td>
       <td>${normalizeDate(r.RegDate) || '-'}</td>
@@ -3679,6 +3805,27 @@ function renderMyBookings() {
       <td>${r.RegCost ? escAttr(r.RegCost) + ' ر.ع' : '-'}</td>
       <td><span class="badge ${cls}">${escAttr(state)}</span></td>
     </tr>`;
+
+    // ===== صف الملاحظة (غير قابل للتعديل) =====
+    if (note) {
+      html += `<tr class="my-note-row">
+        <td colspan="7">
+          <div class="my-note-box">
+            <span class="my-note-label">📝 ملاحظة:</span>
+            <span class="my-note-text">${escAttr(note)}</span>
+          </div>
+        </td>
+      </tr>`;
+    } else {
+      html += `<tr class="my-note-row">
+        <td colspan="7">
+          <div class="my-note-box empty">
+            <span class="my-note-label">📝 ملاحظة:</span>
+            <span class="my-note-text">لا توجد ملاحظات</span>
+          </div>
+        </td>
+      </tr>`;
+    }
   });
 
   html += '</tbody></table></div>';
