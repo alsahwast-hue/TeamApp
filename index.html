@@ -1565,7 +1565,7 @@ async function silentRefreshSlots() {
   closeConfirmModal();          // ← أضف هذا السطر
   clearSelectedSlot();
   document.getElementById('bookMsg').innerHTML =
-    '<div class="error-msg">الوقت الذي اخترته تم حجزه، اختر وقتاً آخر</div>';
+     `<div class="success-msg">✅الطلب في الاجراء، سيتم تأكيد الحجز في نافذة طلباتي<br>رقم الطلب: ${data.regNo}</div>`;
 }
     }
     renderCalendar();
