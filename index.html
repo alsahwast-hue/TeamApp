@@ -2035,13 +2035,17 @@ function renderAdminTable(rows, showInputRow = false) {
   const box = document.getElementById('reservesList');
 
   /* ============ فلترة بالتاريخ ============ */
-  const searchDate = document.getElementById('adminSearchDate').value;
+  const searchDate  = document.getElementById('adminSearchDate').value;
+  const searchState = document.getElementById('adminSearchState').value;
   const total = rows.length;
   if (searchDate) {
     rows = rows.filter(r => normalizeDate(r.ResDate) === searchDate);
   }
+  if (searchState) {
+    rows = rows.filter(r => String(r.ResShow).trim() === searchState);
+  }
   document.getElementById('adminSearchCount').textContent =
-    searchDate ? `النتائج: ${rows.length} من ${total}` : '';
+    (searchDate || searchState) ? `النتائج: ${rows.length} من ${total}` : '';
 
   /* ============ ترتيب تصاعدي: من الأقدم إلى الأحدث ثم حسب وقت البداية ============ */
   const sortedRows = [...rows].sort((a, b) => {
@@ -2105,8 +2109,8 @@ function renderAdminTable(rows, showInputRow = false) {
 
   /* ============ رسالة عند عدم وجود بيانات ============ */
   if (!sortedRows.length && !showInputRow) {
-    const emptyText = searchDate
-      ? `لا توجد أوقات بتاريخ ${searchDate}`
+    const emptyText = (searchDate || searchState)
+      ? 'لا توجد أوقات مطابقة للبحث'
       : 'لا توجد أوقات مسجلة بعد';
     html += `<tr><td colspan="7" style="padding:20px;color:#888">${emptyText}</td></tr>`;
   }
@@ -2384,10 +2388,12 @@ async function toggleStatus(resId, newStatus, btnEl) {
 async function bulkToggleStatus(btnEl) {
   if (btnEl.dataset.busy === '1') return;
 
-  const searchDate = document.getElementById('adminSearchDate').value;
-  const rows = searchDate
-    ? adminRowsCache.filter(r => normalizeDate(r.ResDate) === searchDate)
-    : adminRowsCache;
+   const searchDate  = document.getElementById('adminSearchDate').value;
+  const searchState = document.getElementById('adminSearchState').value;
+  const rows = adminRowsCache.filter(r =>
+    (!searchDate  || normalizeDate(r.ResDate) === searchDate) &&
+    (!searchState || String(r.ResShow).trim() === searchState)
+  );
 
   if (!rows.length) { alert('لا توجد أوقات لتغيير حالتها'); return; }
 
