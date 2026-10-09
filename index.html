@@ -822,7 +822,26 @@ body.has-install-bar { padding-bottom: 80px; }
 .ply-photo-hint { display:block; font-size:10px; color:#888; margin-top:2px; }
 #printModal { z-index: 3000; }
 #playerModal { z-index: 2500; }
-
+/* ===== قائمة اقتراح الأعضاء ===== */
+.sub-suggest {
+  position: fixed; z-index: 4000;
+  background: #fff; border: 2px solid #f0b90b; border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+  max-height: 240px; overflow-y: auto; display: none;
+  min-width: 200px;
+  direction: rtl;
+}
+.sub-suggest.show { display: block; }
+.sub-suggest .sg-item {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 9px 12px; cursor: pointer; border-bottom: 1px solid #eee;
+  font-size: 13px; font-weight: 600; color: #1e3c72;
+}
+.sub-suggest .sg-item:last-child { border-bottom: none; }
+.sub-suggest .sg-item:hover,
+.sub-suggest .sg-item.active { background: #fffbe6; }
+.sub-suggest .sg-tel { direction: ltr; color: #666; font-size: 12px; font-weight: 600; }
+.sub-suggest .sg-empty { padding: 12px; text-align: center; color: #888; font-size: 13px; }
 
 </style>
 </head>
@@ -1442,10 +1461,11 @@ body.has-install-bar { padding-bottom: 80px; }
       <button class="close-btn" onclick="closePlayersList()">✖</button>
     </div>
     <div class="modal-body" style="flex:1;overflow-y:auto;padding:18px;">
-      <div class="admin-toolbar" style="margin-bottom:12px;">
-        <button class="btn small" onclick="loadPlayersList()">🔄 تحديث</button>
-        <span class="subs-count" style="margin-inline-start:auto;" id="plyListCount"></span>
-      </div>
+    <div class="admin-toolbar" style="margin-bottom:12px;">
+  <button class="btn small green" id="plyAddBtn" onclick="startAddPlayer()">➕ إضافة عضو</button>
+  <button class="btn small" onclick="loadPlayersList()">🔄 تحديث</button>
+  <span class="subs-count" style="margin-inline-start:auto;" id="plyListCount"></span>
+</div>
       <div class="subs-searchbar">
         <input type="text" id="plyListSearch" placeholder="اسم أو هاتف أو رقم بطاقة"
                oninput="plySearch=this.value;plyEditingId=null;renderPlayersList();">
@@ -1508,6 +1528,7 @@ body.has-install-bar { padding-bottom: 80px; }
   </div>
 </div>
 
+<div id="subSuggest" class="sub-suggest"></div>
 <script>
 /* ============================================================
    إعدادات السكربتات
@@ -1540,6 +1561,7 @@ let expSearchDate = '';
 let expFormOpen = false;
 let expEditingId = null;
 let subsYear = new Date().getFullYear();
+let plyAdding = false;
 
 /* ============ التنقل ============ */
 function show(id) {
@@ -3154,7 +3176,10 @@ function renderSubsTable(rows, showInputRow = false) {
     </tr>
   </tfoot></table></div>`;
 
-  box.innerHTML = html;
+   box.innerHTML = html;
+
+  // ربط قائمة الاقتراحات بحقل الاسم (إن كان صف الإضافة ظاهراً)
+  if (showInputRow) bindSubNameSuggest();
 }
 
 
@@ -3165,7 +3190,132 @@ function startAddSubRow() {
   btn.dataset.open = '1';
   btn.textContent = '✖ إغلاق النموذج';
   btn.classList.remove('green'); btn.classList.add('red');
+  ensurePlayersLoaded();                 // ← جديد
   renderSubsTable(subsRowsCache, true);
+}
+
+/* ============================================================
+   اقتراحات أسماء الأعضاء عند إضافة مشترك جديد
+   ============================================================ */
+async function ensurePlayersLoaded() {
+  if (plyListLoaded) return;
+  try {
+    const data = await fetchJSON(PLAYERS_API + '?action=list&t=' + Date.now());
+    if (data.success) {
+      plyListCache = data.rows || [];
+      plyListLoaded = true;
+    }
+  } catch (e) { console.warn('تعذّر تحميل الأعضاء:', e); }
+}
+
+function bindSubNameSuggest() {
+  const input = document.getElementById('new_sub_name');
+  const box   = document.getElementById('subSuggest');
+  if (!input || !box) return;
+
+  let activeIdx = -1;
+
+const position = () => {
+  const r = input.getBoundingClientRect();
+  const w = Math.max(r.width, 220);
+
+  box.style.top   = (r.bottom + 2) + 'px';
+  box.style.width = w + 'px';
+
+  // بداية القائمة = بداية الحقل (الطرف الأيمن في RTL)
+  box.style.left  = 'auto';
+  box.style.right = (document.documentElement.clientWidth - r.right) + 'px';
+
+  // إذا خرجت القائمة من الشاشة من جهة اليسار، أزحها للداخل
+  const bl = box.getBoundingClientRect().left;
+  if (bl < 4) {
+    box.style.right = (parseFloat(box.style.right) + bl - 4) + 'px';
+  }
+};
+
+  const hide = () => { box.classList.remove('show'); activeIdx = -1; };
+
+  const pick = (name, tel) => {
+    input.value = name || '';
+    const telEl = document.getElementById('new_sub_tel');
+    if (telEl) telEl.value = tel || '';
+    hide();
+    const costEl = document.getElementById('new_sub_cost');
+    if (costEl) costEl.focus();
+  };
+
+  const render = () => {
+    const q = input.value.trim().toLowerCase();
+
+    // استبعاد من هو مشترك أصلاً في السنة المعروضة (حسب الهاتف)
+    const existing = new Set(
+      subsRowsCache
+        .filter(r => String(r.SubYear) === String(subsYear))
+        .map(r => onlyDigits(r.SubTel))
+    );
+
+    const list = plyListCache.filter(p => {
+      if (existing.has(onlyDigits(p.PLYTel))) return false;
+      if (!q) return true;
+      return String(p.PLYName || '').toLowerCase().includes(q) ||
+             String(p.PLYTel  || '').toLowerCase().includes(q);
+    });
+
+    if (!plyListLoaded) {
+      box.innerHTML = '<div class="sg-empty">جارٍ تحميل الأعضاء...</div>';
+    } else if (!list.length) {
+      box.innerHTML = '<div class="sg-empty">لا توجد أسماء مطابقة</div>';
+    } else {
+      box.innerHTML = list.map((p, i) => `
+        <div class="sg-item" data-i="${i}">
+          <span>${escAttr(p.PLYName || '-')}</span>
+          <span class="sg-tel">${escAttr(p.PLYTel || '')}</span>
+        </div>`).join('');
+
+      box.querySelectorAll('.sg-item').forEach((el, i) => {
+        // mousedown حتى لا يفقد الحقل التركيز قبل الاختيار
+        el.addEventListener('mousedown', ev => {
+          ev.preventDefault();
+          pick(list[i].PLYName, list[i].PLYTel);
+        });
+      });
+    }
+    activeIdx = -1;
+    position();
+    box.classList.add('show');
+  };
+
+  input.addEventListener('focus', async () => {
+    render();
+    if (!plyListLoaded) { await ensurePlayersLoaded(); render(); }
+  });
+  input.addEventListener('input', render);
+  input.addEventListener('blur', () => setTimeout(hide, 150));
+
+  // التنقل بالأسهم و Enter
+  input.addEventListener('keydown', e => {
+    const items = box.querySelectorAll('.sg-item');
+    if (!box.classList.contains('show') || !items.length) return;
+
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      activeIdx = e.key === 'ArrowDown'
+        ? (activeIdx + 1) % items.length
+        : (activeIdx - 1 + items.length) % items.length;
+      items.forEach((el, i) => el.classList.toggle('active', i === activeIdx));
+      items[activeIdx].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter' && activeIdx >= 0) {
+      e.preventDefault();
+      items[activeIdx].dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+    } else if (e.key === 'Escape') {
+      hide();
+    }
+  });
+
+  // إعادة التموضع عند التمرير داخل النافذة
+  const body = document.querySelector('#subsModal .modal-body');
+  if (body) body.addEventListener('scroll', () => { if (box.classList.contains('show')) position(); });
+  window.addEventListener('resize', () => { if (box.classList.contains('show')) position(); });
 }
 
 function cancelAddSubRow() {
@@ -3944,6 +4094,7 @@ document.getElementById('bookingsReportModal').addEventListener('click', functio
 });
 
 function renderBookingsReportModal() {
+    const box = document.getElementById('bookingsReportContent');
     const rows = (bookingsRowsCache || []).filter(r =>
     !bookingsSearchYear || (normalizeDate(r.RegDate) || '').slice(0, 4) === bookingsSearchYear);
 
@@ -5088,7 +5239,8 @@ function openPlayersList() {
 
 function closePlayersList() {
   document.getElementById('plyListModal').classList.remove('active');
-  // نافذة بيانات الفريق ما زالت مفتوحة تحتها، فنبقي التمرير مغلقاً
+  plyRowPhotoNew = '';
+  setPlyAddMode(false);
 }
 
 async function loadPlayersList() {
@@ -5134,7 +5286,7 @@ function renderPlayersList() {
   document.getElementById('plyListCount').textContent =
     `النتائج: ${rows.length} من ${plyListCache.length}`;
 
-  if (!rows.length) {
+  if (!rows.length && !plyAdding) {
     box.innerHTML = '<div class="bookings-empty">لا يوجد أعضاء</div>';
     return;
   }
@@ -5149,6 +5301,31 @@ function renderPlayersList() {
       <th>المركز</th><th>اللجنة</th><th>إجراءات</th>
     </tr></thead><tbody>`;
 
+  /* ===== صف الإضافة (الصف الأول) ===== */
+  if (plyAdding) {
+    html += `<tr class="input-row">
+      <td>
+        ${plyRowPhotoNew
+          ? `<img id="plyRowThumb" class="ply-thumb editable" src="${plyRowPhotoNew}" onclick="plyRowPhotoClick()" alt="">`
+          : `<span id="plyRowThumb" class="ply-thumb none editable" onclick="plyRowPhotoClick()" title="اضغط لإضافة صورة">📷</span>`}
+        <small class="ply-photo-hint">اضغط للإضافة</small>
+      </td>
+      <td><strong>جديد</strong></td>
+      <td><input type="text" id="pl_new_name" placeholder="الاسم"></td>
+      <td><input type="tel" id="pl_new_tel" placeholder="رقم الهاتف" maxlength="15"></td>
+      <td><input type="text" id="pl_new_idc" inputmode="numeric" maxlength="15"></td>
+      <td><input type="date" id="pl_new_exp"></td>
+      <td><input type="date" id="pl_new_birth"
+           oninput="document.getElementById('pl_new_age').value=plyCalcAge(this.value)"></td>
+      <td><input type="number" id="pl_new_age" min="0" max="120"></td>
+      <td><select id="pl_new_pos">${opts(PLY_POSITIONS, '')}</select></td>
+      <td><select id="pl_new_sec">${opts(PLY_SECTIONS, '')}</select></td>
+      <td style="white-space:nowrap">
+        <button class="btn small green" onclick="saveNewPlayer(this)">💾</button>
+        <button class="btn small red" onclick="cancelAddPlayer()">✖</button>
+      </td></tr>`;
+  }
+
   rows.forEach(r => {
     const id = r.PLYID;
     const sid = escAttr(id);
@@ -5161,7 +5338,7 @@ function renderPlayersList() {
 
     if (plyEditingId === id) {
       html += `<tr class="input-row" data-plyid="${sid}">
-            <td>
+        <td>
           ${r.PLYPhoto
             ? `<img id="plyRowThumb" class="ply-thumb editable" src="${escAttr(r.PLYPhoto)}" onclick="plyRowPhotoClick()" title="اضغط لتغيير الصورة" alt="">`
             : `<span id="plyRowThumb" class="ply-thumb none editable" onclick="plyRowPhotoClick()" title="اضغط لإضافة صورة">📷</span>`}
@@ -5179,7 +5356,7 @@ function renderPlayersList() {
         <td><select id="pl_sec_${sid}">${opts(PLY_SECTIONS, r.PLYSection)}</select></td>
         <td style="white-space:nowrap">
           <button class="btn small green" onclick="savePlayerRow('${sid}', this)">💾</button>
-          <button class="btn small red" onclick="plyEditingId=null;renderPlayersList();">✖</button>
+          <button class="btn small red" onclick="plyEditingId=null;plyRowPhotoNew='';renderPlayersList();">✖</button>
         </td></tr>`;
     } else {
       html += `<tr data-plyid="${sid}">
@@ -5194,7 +5371,7 @@ function renderPlayersList() {
         <td>${escAttr(r.PLYPosition) || '-'}</td>
         <td>${escAttr(r.PLYSection) || '-'}</td>
         <td style="white-space:nowrap">
-          <button class="btn small goldEdit" onclick="plyEditingId='${sid}';renderPlayersList();">✏️</button>
+          <button class="btn small goldEdit" onclick="startEditPlayer('${sid}')">✏️</button>
           <button class="btn small" onclick="printPlayerRow('${sid}')" title="طباعة البطاقة">🖨️</button>
         </td></tr>`;
     }
@@ -5202,6 +5379,94 @@ function renderPlayersList() {
 
   html += '</tbody></table></div>';
   box.innerHTML = html;
+}
+
+/* ===== تعديل صف (يغلق صف الإضافة حتى لا يتعارض) ===== */
+function startEditPlayer(id) {
+  setPlyAddMode(false);
+  plyRowPhotoNew = '';
+  plyEditingId = id;
+  renderPlayersList();
+}
+
+/* ===== زر الإضافة ===== */
+function setPlyAddMode(on) {
+  plyAdding = on;
+  const btn = document.getElementById('plyAddBtn');
+  if (!btn) return;
+  btn.textContent = on ? '✖ إغلاق' : '➕ إضافة عضو';
+  btn.classList.toggle('red', on);
+  btn.classList.toggle('green', !on);
+}
+
+function startAddPlayer() {
+  if (plyAdding) { cancelAddPlayer(); return; }
+  plyEditingId = null;
+  plyRowPhotoNew = '';
+  setPlyAddMode(true);
+  renderPlayersList();
+  const n = document.getElementById('pl_new_name');
+  if (n) n.focus();
+}
+
+function cancelAddPlayer() {
+  plyRowPhotoNew = '';
+  setPlyAddMode(false);
+  renderPlayersList();
+}
+
+async function saveNewPlayer(btnEl) {
+  const g = k => document.getElementById('pl_new_' + k).value.trim();
+  const name = g('name'), tel = g('tel');
+
+  if (!name || !tel) { alert('الاسم والهاتف مطلوبان'); return; }
+  if (!/^[0-9]{8,15}$/.test(tel)) {
+    alert('رقم الهاتف يجب أن يتكون من أرقام فقط (8 إلى 15 رقماً)');
+    return;
+  }
+  if (plyListCache.some(p => onlyDigits(p.PLYTel) === onlyDigits(tel))) {
+    alert('رقم الهاتف مسجل مسبقاً لعضو آخر');
+    return;
+  }
+
+  if (btnEl.dataset.busy === '1') return;
+  btnEl.dataset.busy = '1';
+  btnEl.classList.add('loading');
+  btnEl.disabled = true;
+
+  try {
+    // 1) توليد رقم العضوية الجديد من السيرفر (نفس طريقة بطاقة العضو)
+    const info = await fetchJSON(PLAYERS_API + '?action=get&tel=' + encodeURIComponent(tel) + '&t=' + Date.now());
+    if (!info.success) throw new Error(info.message);
+    if (info.found) throw new Error('رقم الهاتف مسجل مسبقاً');
+    const newId = info.newId;
+    if (!newId) throw new Error('تعذّر توليد رقم العضوية');
+
+    // 2) الحفظ
+    const upd = {
+      PLYID: newId, PLYName: name, PLYTel: tel,
+      PLYBirthDay: g('birth'), PLYAge: g('age'),
+      PLYPosition: g('pos'), PLYSection: g('sec'),
+      PLYPhoto: plyRowPhotoNew || '',
+      PLYIDCARD: g('idc'), PLYIDCARDExpired: g('exp')
+    };
+    const res = await fetch(PLAYERS_API, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'save', ...upd })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message);
+
+    plyListCache.push(upd);      // يظهر أيضاً في اقتراحات نافذة الاشتراكات
+    plyRowPhotoNew = '';
+    setPlyAddMode(false);
+    renderPlayersList();
+  } catch (e) {
+    alert('خطأ: ' + e.message);
+    btnEl.classList.remove('loading');
+    btnEl.disabled = false;
+    btnEl.dataset.busy = '0';
+  }
 }
 
 function printPlayerRow(id) {
