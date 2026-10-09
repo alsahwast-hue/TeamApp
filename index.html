@@ -123,7 +123,7 @@
   .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(42,82,152,.4); }
   .btn.gold  { background: linear-gradient(135deg, #f0b90b, #d4a017); color: #000; }
   .btn.goldEdit  { background: linear-gradient(135deg, #f7ff88d8, #f7ff88d8); color: #000; }
-  .btn.green { background: linear-gradient(135deg, #27ae60, #1e8449); color: #fff; }
+  .btn.green { background: linear-gradient(135deg, #27ae60, #1e8449); color: #fff;}
   .btn.red   { background: linear-gradient(135deg, #e74c3c, #c0392b); color: #fff; }
   .btn.small { width: auto; padding: 8px 14px; font-size: 13px; border-radius: 8px; }
   .btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
@@ -738,6 +738,91 @@ body.has-install-bar { padding-bottom: 80px; }
   background:linear-gradient(135deg,#1e3c72,#2a5298); color:#fff;
   box-shadow:0 4px 12px rgba(42,82,152,.35);
 }
+#bookingsYearFilter {
+  padding: 6px 8px; border: 2px solid #e0e0e0; border-radius: 8px;
+  font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 700;
+  background: #fff; color: #1e3c72; cursor: pointer; width: auto;
+}
+#bookingsYearFilter:focus { border-color: #2a5298; outline: none; }
+#subsYearFilter {
+  padding: 6px 6px; border: 2px solid #e0e0e0; border-radius: 8px;
+  font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 700;
+  background: #fff; color: #1e3c72; cursor: pointer; width: auto;
+}
+/* ===== اسم العضو كرابط ===== */
+.subs-table .sub-name-link {
+  color: #0a1f44; font-weight: 800; text-decoration: underline;
+  cursor: pointer;
+}
+.subs-table .sub-name-link:hover { color: #2a5298; }
+
+/* ===== بطاقة العضو ===== */
+.pc-photo-wrap { display:flex; justify-content:center; margin-bottom:10px; }
+.pc-photo {
+  width:130px; height:130px; border-radius:50%; overflow:hidden;
+  border:3px solid #2a5298; background:#f8faff;
+  display:flex; align-items:center; justify-content:center;
+  font-size:48px; color:#2a5298; position:relative;
+}
+.pc-photo img { width:100%; height:100%; object-fit:cover; }
+.pc-photo.editable { cursor:pointer; border-style:dashed; }
+.pc-photo.editable:hover { border-color:#f0b90b; }
+.pc-idrow {
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  margin-bottom:18px;
+}
+.pc-id {
+  font-size:20px; font-weight:700; color:#1e3c72;
+  direction:ltr; letter-spacing:1px;
+}
+.pc-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:10px; }
+#playerModal .field input:disabled,
+#playerModal .field select:disabled {
+  background:#f5f7fa; color:#333; opacity:1; cursor:default;
+}
+#playerModal .modal-body { position:relative; min-height:300px; }
+/* ===== بطاقة العضو: عمودان دائماً ===== */
+.pc-row { grid-template-columns:1fr 1fr !important; gap:8px; }
+#playerModal .field input,
+#playerModal .field select { padding:9px 6px; font-size:13px; min-width:0; }
+#playerModal .field label { font-size:13px; }
+.pc-actions { display:flex; gap:8px; margin-top:8px; }
+.pc-actions .btn { flex:1; }
+
+/* ===== نافذة اختيار اتجاه الطباعة ===== */
+.print-opts { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:14px 0 18px; }
+.print-opt {
+  border:3px solid #e0e0e0; border-radius:14px; padding:12px 6px;
+  text-align:center; cursor:pointer; transition:.15s; background:#fff;
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  font-weight:700; color:#1e3c72;
+}
+.print-opt input { display:none; }
+.print-opt svg { width:100%; max-width:110px; height:110px; }
+.print-opt:has(input:checked) {
+  border-color:#f0b90b; background:#fffbe6;
+  box-shadow:0 0 0 3px rgba(240,185,11,.3);
+}
+/* ===== عنوان بيانات الفريق قابل للنقر ===== */
+.modal-header h3.clickable { cursor:pointer; text-decoration:underline dotted; text-underline-offset:5px; }
+.modal-header h3.clickable:hover { color:#f0b90b; }
+
+/* ===== جدول الأعضاء ===== */
+.ply-thumb { width:38px; height:38px; border-radius:50%; object-fit:cover; border:2px solid #2a5298; background:#f8faff; }
+.ply-thumb.none { display:inline-flex; align-items:center; justify-content:center; font-size:18px; color:#2a5298; }
+.ply-table td, .ply-table th { white-space:nowrap; }
+.ply-table input[type="text"], .ply-table input[type="tel"],
+.ply-table input[type="number"], .ply-table input[type="date"], .ply-table select {
+  font-family:'Cairo',sans-serif; font-size:12px; padding:6px 4px; width:100%; min-width:90px;
+  border:1px solid #d4a017; border-radius:6px; text-align:center; background:#fff;
+}
+.ply-table input[type="number"] { min-width:60px; }
+.ply-thumb.editable { cursor:pointer; border:2px dashed #f0b90b; }
+.ply-thumb.editable:hover { transform:scale(1.15); }
+.ply-photo-hint { display:block; font-size:10px; color:#888; margin-top:2px; }
+#printModal { z-index: 3000; }
+#playerModal { z-index: 2500; }
+
 
 </style>
 </head>
@@ -935,7 +1020,7 @@ body.has-install-bar { padding-bottom: 80px; }
 <div class="modal-overlay" id="teamModal">
   <div class="modal">
     <div class="modal-header">
-      <h3>👥 بيانات الفريق</h3>
+            <h3 class="clickable" onclick="openPlayersList()" title="عرض جدول الأعضاء">👥 بيانات الفريق</h3>
       <button class="close-btn" onclick="closeTeamModal()">✖</button>
     </div>
     <div class="modal-body">
@@ -1005,12 +1090,13 @@ body.has-install-bar { padding-bottom: 80px; }
     </div>
     <div class="modal-body" style="flex:1;overflow-y:auto;padding:18px;">
 
-      <div class="admin-toolbar" style="margin-bottom:12px;">
-        <button class="btn small green" id="addSubToggleBtn" data-open="0" onclick="startAddSubRow()">➕ إضافة عضو</button>
-        <button class="btn small" onclick="loadSubs()">🔄 تحديث</button>
-        <button class="btn small gold" onclick="openReportsModal()">📊 التقارير</button>
-        <span class="subs-count" id="subsCount" style="margin:0 auto 0 0;"></span>
-      </div>
+ <div class="admin-toolbar" style="margin-bottom:12px;">
+  <button class="btn small green" id="addSubToggleBtn" data-open="0" onclick="startAddSubRow()">➕عضوجديد</button>
+  <button class="btn small gold" onclick="openReportsModal()">📊تقرير</button>
+   <button class="btn small" onclick="loadSubs()">🔄</button>
+  <select id="subsYearFilter" onchange="setSubsYear(this.value)"></select>
+  <span class="subs-count" id="subsCount" style="margin:0 auto 0 0;"></span>
+</div>
 
       <div id="subsList">جارٍ التحميل...</div>
     </div>
@@ -1039,10 +1125,13 @@ body.has-install-bar { padding-bottom: 80px; }
     </div>
     <div class="modal-body" style="flex:1;overflow-y:auto;padding:18px;">
 
-    <div class="admin-toolbar" style="margin-bottom:12px;">
+<div class="admin-toolbar" style="margin-bottom:12px;">
   <button class="btn small" onclick="loadBookings()">🔄 تحديث</button>
   <button class="btn small gold" onclick="openBookingsReportModal()">📊 التقارير</button>
- <span class="subs-count" style="margin-inline-start:auto;" id="bookingsCount"></span>
+  <select id="bookingsYearFilter" onchange="bookingsSearchYear=this.value;renderBookingsTable(bookingsRowsCache);">
+    <option value="">كل السنوات</option>
+  </select>
+  <span class="subs-count" style="margin-inline-start:auto;" id="bookingsCount"></span>
 </div>
 
       <!-- شريط البحث والفلترة -->
@@ -1236,6 +1325,189 @@ body.has-install-bar { padding-bottom: 80px; }
 </div>
 
 
+<!-- ============ بطاقة العضو ============ -->
+<div class="modal-overlay" id="playerModal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <h3>🪪 بطاقة العضو</h3>
+      <button class="close-btn" onclick="closePlayerCard()">✖</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-loading" id="plyLoading">
+        <div class="spinner"></div><span>جارٍ التحميل...</span>
+      </div>
+
+      <div class="pc-photo-wrap">
+        <div class="pc-photo" id="plyPhotoBox" onclick="plyPhotoClick()">
+          <span id="plyPhotoPh">👤</span>
+          <img id="plyPhotoImg" style="display:none" alt="">
+        </div>
+        <input type="file" id="plyPhotoInput" accept="image/*" style="display:none" onchange="plyPickPhoto(event)">
+      </div>
+
+      <div class="pc-idrow">
+        <span class="pc-id" id="plyIdText">PLY-------</span>
+        <button class="btn small goldEdit" id="plyEditBtn" onclick="togglePlyEdit()">✏️</button>
+      </div>
+
+     <div class="pc-row">
+        <div class="field"><label>الاسم</label><input type="text" id="plyName"></div>
+        <div class="field"><label>رقم الهاتف</label><input type="tel" id="plyTel" maxlength="15"></div>
+      </div>
+
+      <!-- الجديد -->
+      <div class="pc-row">
+        <div class="field"><label>رقم البطاقة</label><input type="text" id="plyIdCard" inputmode="numeric" maxlength="15"></div>
+        <div class="field"><label>تاريخ الانتهاء</label><input type="date" id="plyIdExp"></div>
+      </div>
+
+      <div class="pc-row">
+        <div class="field"><label>تاريخ الميلاد</label>
+          <input type="date" id="plyBirth" onchange="document.getElementById('plyAge').value=plyCalcAge(this.value)"></div>
+        <div class="field"><label>العمر</label><input type="number" id="plyAge" min="0" max="120"></div>
+      </div>
+
+      <div class="pc-row">
+        <div class="field"><label>المركز</label><select id="plyPosition"></select></div>
+        <div class="field"><label>اللجنة</label><select id="plySection"></select></div>
+      </div>
+
+      <div class="pc-actions">
+        <button class="btn gold" id="plySaveBtn" style="display:none" onclick="savePlayerCard()">💾 حفظ</button>
+        <button class="btn" id="plyPrintBtn" onclick="openPrintDialog()">🖨️ طباعة البطاقة</button>
+      </div>
+      <div id="plyMsg" class="team-form-msg"></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============ نافذة اختيار اتجاه الطباعة ============ -->
+<div class="modal-overlay" id="printModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <h3>🖨️ طباعة البطاقة</h3>
+      <button class="close-btn" onclick="closePrintDialog()">✖</button>
+    </div>
+    <div class="modal-body">
+      <div class="reg-note">اختر اتجاه الطباعة (مقاس بطاقة ID)</div>
+
+      <div class="print-opts">
+        <label class="print-opt">
+          <input type="radio" name="printOrient" value="portrait" checked>
+          <svg viewBox="0 0 60 90" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="2" width="56" height="86" rx="5" fill="#fff" stroke="#1e3c72" stroke-width="2"/>
+            <path d="M2 7a5 5 0 0 1 5-5h46a5 5 0 0 1 5 5v16H2z" fill="#1e3c72"/>
+            <circle cx="12" cy="13" r="5" fill="#f0b90b"/><circle cx="48" cy="13" r="5" fill="#f0b90b"/>
+            <rect x="22" y="10" width="16" height="3" rx="1.5" fill="#fff"/>
+            <rect x="19" y="28" width="22" height="26" rx="3" fill="#cfd8ea"/>
+            <rect x="14" y="59" width="32" height="4" rx="2" fill="#1e3c72"/>
+            <rect x="10" y="67" width="40" height="3" rx="1.5" fill="#9aa8c7"/>
+            <rect x="10" y="73" width="40" height="3" rx="1.5" fill="#9aa8c7"/>
+            <rect x="10" y="79" width="40" height="3" rx="1.5" fill="#9aa8c7"/>
+          </svg>
+          <span>عمودي</span>
+        </label>
+
+        <label class="print-opt">
+          <input type="radio" name="printOrient" value="landscape">
+          <svg viewBox="0 0 90 60" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="2" width="86" height="56" rx="5" fill="#fff" stroke="#1e3c72" stroke-width="2"/>
+            <path d="M2 7a5 5 0 0 1 5-5h76a5 5 0 0 1 5 5v14H2z" fill="#1e3c72"/>
+            <circle cx="14" cy="11" r="5" fill="#f0b90b"/><circle cx="76" cy="11" r="5" fill="#f0b90b"/>
+            <rect x="32" y="8" width="26" height="3" rx="1.5" fill="#fff"/>
+            <rect x="64" y="26" width="18" height="24" rx="3" fill="#cfd8ea"/>
+            <rect x="12" y="27" width="42" height="4" rx="2" fill="#1e3c72"/>
+            <rect x="12" y="35" width="42" height="3" rx="1.5" fill="#9aa8c7"/>
+            <rect x="12" y="41" width="42" height="3" rx="1.5" fill="#9aa8c7"/>
+            <rect x="12" y="47" width="42" height="3" rx="1.5" fill="#9aa8c7"/>
+          </svg>
+          <span>أفقي</span>
+        </label>
+      </div>
+
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px;">
+        <button class="btn green" onclick="confirmPrintCard()">🖨️ طباعة</button>
+        <button class="btn red" onclick="closePrintDialog()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ نافذة جدول الأعضاء ============ -->
+<div class="modal-overlay" id="plyListModal" style="padding:0;">
+  <div class="modal" style="max-width:100%;width:100%;height:100vh;max-height:100vh;border-radius:0;display:flex;flex-direction:column;">
+    <div class="modal-header" style="border-radius:0;flex-shrink:0;">
+      <h3>🪪 أعضاء الفريق</h3>
+      <button class="close-btn" onclick="closePlayersList()">✖</button>
+    </div>
+    <div class="modal-body" style="flex:1;overflow-y:auto;padding:18px;">
+      <div class="admin-toolbar" style="margin-bottom:12px;">
+        <button class="btn small" onclick="loadPlayersList()">🔄 تحديث</button>
+        <span class="subs-count" style="margin-inline-start:auto;" id="plyListCount"></span>
+      </div>
+      <div class="subs-searchbar">
+        <input type="text" id="plyListSearch" placeholder="اسم أو هاتف أو رقم بطاقة"
+               oninput="plySearch=this.value;plyEditingId=null;renderPlayersList();">
+               <input type="file" id="plyRowPhotoInput" accept="image/*" style="display:none" onchange="plyRowPickPhoto(event)">
+        <button class="btn small red" onclick="plySearch='';document.getElementById('plyListSearch').value='';plyEditingId=null;renderPlayersList();">✖</button>
+      </div>
+      <div id="plyListBox">جارٍ التحميل...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ نافذة اختيار اتجاه الطباعة ============ -->
+<div class="modal-overlay" id="printModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <h3>🖨️ طباعة البطاقة</h3>
+      <button class="close-btn" onclick="closePrintDialog()">✖</button>
+    </div>
+    <div class="modal-body">
+      <div class="reg-note">اختر اتجاه الطباعة (مقاس بطاقة ID)</div>
+
+      <div class="print-opts">
+        <label class="print-opt">
+          <input type="radio" name="printOrient" value="portrait" checked>
+          <svg viewBox="0 0 60 90" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="2" width="56" height="86" rx="5" fill="#fff" stroke="#1e3c72" stroke-width="2"/>
+            <path d="M2 7a5 5 0 0 1 5-5h46a5 5 0 0 1 5 5v16H2z" fill="#1e3c72"/>
+            <circle cx="12" cy="13" r="5" fill="#f0b90b"/><circle cx="48" cy="13" r="5" fill="#f0b90b"/>
+            <rect x="22" y="10" width="16" height="3" rx="1.5" fill="#fff"/>
+            <rect x="19" y="28" width="22" height="26" rx="3" fill="#cfd8ea"/>
+            <rect x="14" y="59" width="32" height="4" rx="2" fill="#1e3c72"/>
+            <rect x="10" y="67" width="40" height="3" rx="1.5" fill="#9aa8c7"/>
+            <rect x="10" y="73" width="40" height="3" rx="1.5" fill="#9aa8c7"/>
+            <rect x="10" y="79" width="40" height="3" rx="1.5" fill="#9aa8c7"/>
+          </svg>
+          <span>عمودي</span>
+        </label>
+        <label class="print-opt">
+          <input type="radio" name="printOrient" value="landscape">
+          <svg viewBox="0 0 90 60" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="2" width="86" height="56" rx="5" fill="#fff" stroke="#1e3c72" stroke-width="2"/>
+            <path d="M2 7a5 5 0 0 1 5-5h76a5 5 0 0 1 5 5v14H2z" fill="#1e3c72"/>
+            <circle cx="14" cy="11" r="5" fill="#f0b90b"/><circle cx="76" cy="11" r="5" fill="#f0b90b"/>
+            <rect x="32" y="8" width="26" height="3" rx="1.5" fill="#fff"/>
+            <rect x="64" y="26" width="18" height="24" rx="3" fill="#cfd8ea"/>
+            <rect x="12" y="27" width="42" height="4" rx="2" fill="#1e3c72"/>
+            <rect x="12" y="35" width="42" height="3" rx="1.5" fill="#9aa8c7"/>
+            <rect x="12" y="41" width="42" height="3" rx="1.5" fill="#9aa8c7"/>
+            <rect x="12" y="47" width="42" height="3" rx="1.5" fill="#9aa8c7"/>
+          </svg>
+          <span>أفقي</span>
+        </label>
+      </div>
+
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px;">
+        <button class="btn green" onclick="confirmPrintCard()">🖨️ طباعة</button>
+        <button class="btn red" onclick="closePrintDialog()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ============================================================
    إعدادات السكربتات
@@ -1244,7 +1516,7 @@ const REGISTER_API = "https://script.google.com/macros/s/AKfycbzuk9WJ7jJzbs61oY0
 const RESERVE_API  = "https://script.google.com/macros/s/AKfycbwQdRj3hIdBtYs6ei8Zd2iaxlbSwgFqb5UZTf9L8umf8Vtk6dzCyRFtb6z_jyQfVqbeLA/exec";
 const TEAM_API     = "https://script.google.com/macros/s/AKfycbyEVzkei2njKyAiYXR-SKtJe41LCecsuEsmQCFNWcOq5BSpI0YW-wZtvmvNQG0Z8MNAdw/exec";
 const USER_API     = "https://script.google.com/macros/s/AKfycbzWLFdXIY0YyHOh0zT264fDPmWzBMH-Gi2Ai-2VEh9kNvbzDWd4dHRHTg-HA4ueIfIVqg/exec"; // ← رابط جديد
-const SUBS_API = "https://script.google.com/macros/s/AKfycbybytMzwgNeviYc096B0GTpNio4YIycqjAFknhMNouHuQu2HUB4w7I8QpXt2YzAvSPWUw/exec";
+const SUBS_API = "https://script.google.com/macros/s/AKfycbxH8dTH_Po3qZx45kPyDga-iJGFgmnw2lvHzy7AwzHCFL9W9aWll6UOo5aPdj1uBKSTxw/exec";
 const EXP_API = "https://script.google.com/macros/s/AKfycbz_lz2jkVm-o5OE_TrrREbHAN0NZKqcFeUXL1HiF-SkB0fxAuSgLYd6bO0ZxHBRA-ppEw/exec";
 
 /* ============ متغيرات عامة ============ */
@@ -1267,6 +1539,7 @@ let expSearchText = '';
 let expSearchDate = '';
 let expFormOpen = false;
 let expEditingId = null;
+let subsYear = new Date().getFullYear();
 
 /* ============ التنقل ============ */
 function show(id) {
@@ -2690,7 +2963,8 @@ async function loadTeamInfoOnStart() {
 function openSubsModal() {
   document.getElementById('subsModal').classList.add('active');
   document.body.style.overflow = 'hidden';
-  if (!subsLoaded) loadSubs();
+  subsYear = new Date().getFullYear();     // ← الافتراضي: السنة الحالية
+  if (!subsLoaded) loadSubs(); else { fillSubsYears(); renderSubsTable(subsRowsCache, false); }
 }
 
 function closeSubsModal() {
@@ -2708,7 +2982,7 @@ function loadSubs() {
   const btn = document.getElementById('addSubToggleBtn');
   const showInputRow = btn.dataset.open === '1';
 
-  fetch(SUBS_API + '?action=listSubs')
+  return fetch(SUBS_API + '?action=listSubs')          // ← return
     .then(r => r.json())
     .then(data => {
       if (!data.success) {
@@ -2716,6 +2990,7 @@ function loadSubs() {
       } else {
         subsRowsCache = data.rows || [];
         subsLoaded = true;
+        fillSubsYears();                               // ← جديد
         renderSubsTable(subsRowsCache, showInputRow);
       }
     })
@@ -2724,13 +2999,37 @@ function loadSubs() {
     });
 }
 
+
+/* قائمة السنوات: الموجودة + الحالية + القادمة */
+function fillSubsYears() {
+  const sel = document.getElementById('subsYearFilter');
+  const cur = new Date().getFullYear();
+  const set = new Set(subsRowsCache.map(r => String(r.SubYear)).filter(Boolean));
+  set.add(String(cur));
+  set.add(String(cur + 1));
+  const years = [...set].sort((a, b) => b - a);
+
+  if (!years.includes(String(subsYear))) subsYear = cur;
+
+  sel.innerHTML = years.map(y =>
+    `<option value="${y}" ${String(y) === String(subsYear) ? 'selected' : ''}>${y}</option>`).join('');
+}
+
+function setSubsYear(v) {
+  subsYear = parseInt(v, 10);
+  const open = document.getElementById('addSubToggleBtn').dataset.open === '1';
+  renderSubsTable(subsRowsCache, open);
+}
+
+
+
 /* ===== أسماء الشهور حسب السنة الحالية (تتغير تلقائياً) ===== */
 function getSubsMonths() {
-  const y = new Date().getFullYear();
-  return Array.from({ length: 12 }, (_, i) => `${i + 1}/${y}`);
+  return Array.from({ length: 12 }, (_, i) => `${i + 1}/${subsYear}`);
 }
 
 function renderSubsTable(rows, showInputRow = false) {
+   rows = rows.filter(r => String(r.SubYear) === String(subsYear));   // ← جديد
   const box = document.getElementById('subsList');
   const months = getSubsMonths();
 
@@ -2812,7 +3111,7 @@ function renderSubsTable(rows, showInputRow = false) {
     totalCost += cost;
 
     html += `<tr data-subid="${subId}">`;
-    html += `<td class="cell-subname">${r.SubName || '-'}</td>`;
+    html += `<td class="cell-subname"><a class="sub-name-link" onclick="openPlayerCard('${subId}')">${escAttr(r.SubName) || '-'}</a></td>`;
     html += `<td class="cell-subtel">${r.SubTel || '-'}</td>`;
     html += `<td class="cell-subcost">${r.SubCost || '-'}</td>`;
 
@@ -2899,6 +3198,7 @@ async function saveNewSubRow() {
         SubName: name,
         SubTel: tel,
         SubCost: cost,
+        SubYear: subsYear, 
         Sub1: '', Sub2: '', Sub3: '', Sub4: '', Sub5: '', Sub6: '',
         Sub7: '', Sub8: '', Sub9: '', Sub10: '', Sub11: '', Sub12: ''
       })
@@ -3070,7 +3370,7 @@ function renderReports() {
   const box = document.getElementById('reportsContent');
   const months = getSubsMonths();
 
-  const rows = subsRowsCache || [];
+  const rows = (subsRowsCache || []).filter(r => String(r.SubYear) === String(subsYear));
   const totalMembers = rows.length;
 
   let totalExpected = 0;   // المبلغ الكلي المتوقع (cost × 12 × أعضاء)
@@ -3162,7 +3462,7 @@ let bookingsLoaded = false;
 let bookingsSearchName = '';
 let bookingsSearchDate = '';
 let bookingsSearchState = '';
-
+let bookingsSearchYear = '';   // ← جديد
 
 function openBookingsModal() {
   document.getElementById('bookingsModal').classList.add('active');
@@ -3210,6 +3510,7 @@ function loadBookings() {
       } else {
         bookingsRowsCache = data.rows || [];
         bookingsLoaded = true;
+        fillBookingsYears(bookingsRowsCache); 
         renderBookingsTable(bookingsRowsCache);
       }
     })
@@ -3222,10 +3523,28 @@ function clearBookingsFilters() {
   bookingsSearchName = '';
   bookingsSearchDate = '';
   bookingsSearchState = '';
+  bookingsSearchYear = '';                                    // ← جديد
   document.getElementById('bookingsSearchName').value = '';
   document.getElementById('bookingsSearchDate').value = '';
   document.getElementById('bookingsSearchState').value = '';
+  document.getElementById('bookingsYearFilter').value = '';   // ← جديد
   renderBookingsTable(bookingsRowsCache);
+}
+
+/* تعبئة قائمة السنوات من الحجوزات الموجودة */
+function fillBookingsYears(rows) {
+  const sel = document.getElementById('bookingsYearFilter');
+  if (!sel) return;
+
+  const years = [...new Set(
+    rows.map(r => (normalizeDate(r.RegDate) || '').slice(0, 4)).filter(Boolean)
+  )].sort((a, b) => b - a);   // الأحدث أولاً
+
+  // إذا السنة المختارة لم تعد موجودة، ألغِ الفلتر
+  if (bookingsSearchYear && !years.includes(bookingsSearchYear)) bookingsSearchYear = '';
+
+  sel.innerHTML = '<option value="">كل السنوات</option>' +
+    years.map(y => `<option value="${y}" ${y === bookingsSearchYear ? 'selected' : ''}>${y}</option>`).join('');
 }
 
 function renderBookingsTable(rows) {
@@ -3246,6 +3565,10 @@ function renderBookingsTable(rows) {
   }
   if (bookingsSearchState) {
     filtered = filtered.filter(r => String(r.RegState || '').trim() === bookingsSearchState);
+  }
+  if (bookingsSearchYear) {                                   // ← جديد
+    filtered = filtered.filter(r =>
+      (normalizeDate(r.RegDate) || '').slice(0, 4) === bookingsSearchYear);
   }
 
   document.getElementById('bookingsCount').textContent =
@@ -3621,8 +3944,8 @@ document.getElementById('bookingsReportModal').addEventListener('click', functio
 });
 
 function renderBookingsReportModal() {
-  const box = document.getElementById('bookingsReportContent');
-  const rows = bookingsRowsCache || [];
+    const rows = (bookingsRowsCache || []).filter(r =>
+    !bookingsSearchYear || (normalizeDate(r.RegDate) || '').slice(0, 4) === bookingsSearchYear);
 
   const st = {
     'تم الحجز':   { n: 0, sum: 0, cls: 'paid' },
@@ -4419,6 +4742,554 @@ async function deleteExp(id, btnEl) {
     alert('خطأ: ' + e.message);
     btnEl.classList.remove('loading'); btnEl.disabled = false; btnEl.dataset.busy = '0';
   }
+}
+
+
+/* ============================================================
+   بطاقة العضو (PLAYERS)
+   ============================================================ */
+const PLAYERS_API = "https://script.google.com/macros/s/AKfycbwz7gPe72vkVAENMushQtdRT77E3xj6bDoHIdQJ3B0h0z_oJEurtoSWJktBjlJ2g6S-hQ/exec";
+
+const PLY_POSITIONS = ['الرئيس','المنسق','نائب الرئيس','أمين الصندوق','عضو','مدرب','نائب مدرب',
+  'مدرب حراس','حارس','مدافع','ظهير','وسط','جناح','هجوم','اخصائي علاج'];
+const PLY_SECTIONS = ['الفريق','اللجنة الرياضية','اللجنة الثقافية','اللجنة المالية','اللجنة الادارية',
+  'اللجنة الاجتماعية','اللجنة الانضباطية','أخرى'];
+const PLY_FIELDS = ['plyName','plyTel','plyIdCard','plyIdExp','plyBirth','plyAge','plyPosition','plySection'];
+
+let ply = { id: '', photo: '', photoData: '', editing: false };
+
+(function initPlyLists() {
+  const opt = arr => '<option value="">— اختر —</option>' +
+    arr.map(v => `<option value="${v}">${v}</option>`).join('');
+  document.getElementById('plyPosition').innerHTML = opt(PLY_POSITIONS);
+  document.getElementById('plySection').innerHTML  = opt(PLY_SECTIONS);
+})();
+
+function plyCalcAge(s) {
+  if (!s) return '';
+  const b = new Date(s + 'T00:00:00');
+  if (isNaN(b)) return '';
+  const n = new Date();
+  let a = n.getFullYear() - b.getFullYear();
+  const m = n.getMonth() - b.getMonth();
+  if (m < 0 || (m === 0 && n.getDate() < b.getDate())) a--;
+  return a >= 0 ? a : '';
+}
+
+function plySetPhoto(url) {
+  const img = document.getElementById('plyPhotoImg');
+  const ph  = document.getElementById('plyPhotoPh');
+  if (url) {
+    img.onerror = () => { img.style.display = 'none'; ph.style.display = ''; };
+    img.src = url; img.style.display = 'block'; ph.style.display = 'none';
+  } else {
+    img.removeAttribute('src'); img.style.display = 'none'; ph.style.display = '';
+  }
+}
+
+function setPlyEditing(on) {
+  ply.editing = on;
+  PLY_FIELDS.forEach(id => document.getElementById(id).disabled = !on);
+  document.getElementById('plySaveBtn').style.display = on ? '' : 'none';
+  document.getElementById('plyEditBtn').textContent = on ? '✖' : '✏️';
+  document.getElementById('plyPhotoBox').classList.toggle('editable', on);
+}
+
+function togglePlyEdit() { setPlyEditing(!ply.editing); }
+
+function plyPhotoClick() {
+  if (ply.editing) document.getElementById('plyPhotoInput').click();
+}
+
+function plyPickPhoto(e) {
+  const f = e.target.files[0];
+  e.target.value = '';
+  if (!f) return;
+
+  const MAX_CHARS = 45000;            // حد خلية Google Sheets = 50000
+  const rd = new FileReader();
+  rd.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      let size = 300, q = 0.8, out = '';
+      for (let i = 0; i < 15; i++) {
+        const k = Math.min(1, size / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width  = Math.max(1, Math.round(img.width  * k));
+        c.height = Math.max(1, Math.round(img.height * k));
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = '#fff';       // خلفية بيضاء للصور الشفافة
+        ctx.fillRect(0, 0, c.width, c.height);
+        ctx.drawImage(img, 0, 0, c.width, c.height);
+        out = c.toDataURL('image/jpeg', q);
+        if (out.length <= MAX_CHARS) break;
+        if (q > 0.5) q -= 0.1; else size = Math.round(size * 0.85);
+      }
+      if (out.length > MAX_CHARS) {
+        alert('تعذّر تصغير الصورة بما يكفي، اختر صورة أخرى');
+        return;
+      }
+      ply.photoData = out;
+      plySetPhoto(out);
+    };
+    img.onerror = () => alert('ملف الصورة غير صالح');
+    img.src = ev.target.result;
+  };
+  rd.readAsDataURL(f);
+}
+
+async function openPlayerCard(subId) {
+  const r = subsRowsCache.find(x => String(x.SubID) === String(subId));
+  if (!r) return;
+
+  ply = { id: '', photo: '', photoData: '', editing: false };
+  document.getElementById('plyMsg').innerHTML = '';
+  document.getElementById('plyIdText').textContent = 'PLY-------';
+  plySetPhoto('');
+  document.getElementById('plyIdCard').value = '';
+  document.getElementById('plyIdExp').value = '';
+  // الاسم والهاتف من نافذة الاشتراكات
+  document.getElementById('plyName').value = r.SubName || '';
+  document.getElementById('plyTel').value  = r.SubTel  || '';
+  document.getElementById('plyBirth').value = '';
+  document.getElementById('plyAge').value = '';
+  document.getElementById('plyPosition').value = '';
+  document.getElementById('plySection').value = '';
+  setPlyEditing(false);
+
+  document.getElementById('playerModal').classList.add('active');
+  const loading = document.getElementById('plyLoading');
+  loading.classList.add('active');
+
+  try {
+    const res = await fetch(PLAYERS_API + '?action=get&tel=' + encodeURIComponent(r.SubTel || '') + '&t=' + Date.now());
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message);
+
+    if (data.found) {
+      const p = data.player;
+      ply.id = p.PLYID; ply.photo = p.PLYPhoto || '';
+      document.getElementById('plyName').value  = p.PLYName || r.SubName || '';
+      document.getElementById('plyTel').value   = p.PLYTel  || r.SubTel  || '';
+      document.getElementById('plyBirth').value = normalizeDate(p.PLYBirthDay) || '';
+      document.getElementById('plyAge').value   = p.PLYBirthDay ? plyCalcAge(normalizeDate(p.PLYBirthDay)) : (p.PLYAge || '');
+      document.getElementById('plyPosition').value = p.PLYPosition || '';
+      document.getElementById('plySection').value  = p.PLYSection  || '';
+      document.getElementById('plyIdCard').value = p.PLYIDCARD || '';
+      document.getElementById('plyIdExp').value  = normalizeDate(p.PLYIDCARDExpired) || '';
+      plySetPhoto(ply.photo);
+      
+    } else {
+      ply.id = data.newId;
+    }
+    document.getElementById('plyIdText').textContent = ply.id;
+  } catch (e) {
+    document.getElementById('plyMsg').innerHTML =
+      `<div class="error-msg">تعذّر التحميل: ${escAttr(e.message)}</div>`;
+  } finally {
+    loading.classList.remove('active');
+  }
+}
+
+function closePlayerCard() {
+  document.getElementById('playerModal').classList.remove('active');
+}
+document.getElementById('playerModal').addEventListener('click', function (e) {
+  if (e.target === this) closePlayerCard();
+});
+
+async function savePlayerCard() {
+  const btn = document.getElementById('plySaveBtn');
+  const msg = document.getElementById('plyMsg');
+  const name = document.getElementById('plyName').value.trim();
+  const tel  = document.getElementById('plyTel').value.trim();
+
+  if (!name || !tel) { msg.innerHTML = '<div class="error-msg">الاسم والهاتف مطلوبان</div>'; return; }
+  if (!ply.id) { msg.innerHTML = '<div class="error-msg">لم يتم توليد رقم البطاقة، أعد فتح البطاقة</div>'; return; }
+
+  btn.disabled = true; btn.textContent = '⏳ جارٍ الحفظ...'; msg.innerHTML = '';
+
+  try {
+    const photo = ply.photoData || ply.photo;   // Base64 الجديدة أو القديمة
+
+    const res = await fetch(PLAYERS_API, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'save',
+        PLYID: ply.id,
+        PLYName: name,
+        PLYTel: tel,
+        PLYBirthDay: document.getElementById('plyBirth').value,
+        PLYAge: document.getElementById('plyAge').value,
+        PLYPosition: document.getElementById('plyPosition').value,
+        PLYSection: document.getElementById('plySection').value,
+        PLYIDCARD: document.getElementById('plyIdCard').value.trim(),
+        PLYIDCARDExpired: document.getElementById('plyIdExp').value,
+        PLYPhoto: photo
+      })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message);
+
+    ply.photo = photo; ply.photoData = '';
+    msg.innerHTML = '<div class="success-msg">✅ تم حفظ بطاقة العضو</div>';
+     plyListLoaded = false;
+    setPlyEditing(false);
+  } catch (e) {
+    msg.innerHTML = `<div class="error-msg">خطأ: ${escAttr(e.message)}</div>`;
+  } finally {
+    btn.disabled = false; btn.textContent = '💾 حفظ';
+  }
+}
+/* ============================================================
+   طباعة بطاقة العضو
+   ============================================================ */
+let printData = null;   // null = اقرأ من نموذج بطاقة العضو
+
+function openPrintDialog(data) {
+  printData = data || null;
+  document.getElementById('printModal').classList.add('active');
+}
+
+function closePrintDialog() {
+  document.getElementById('printModal').classList.remove('active');
+}
+
+document.getElementById('printModal').addEventListener('click', function (e) {
+  if (e.target === this) closePrintDialog();
+});
+
+function confirmPrintCard() {
+  const orient = document.querySelector('input[name="printOrient"]:checked').value;
+  closePrintDialog();
+  printIdCard(orient, printData);
+}
+
+function getTeamInfoForCard() {
+  if (currentTeam) return currentTeam;
+  try { return JSON.parse(localStorage.getItem('teamInfo')) || {}; } catch (e) { return {}; }
+}
+
+function buildCardDoc(orient, data) {
+  const t = getTeamInfoForCard();
+  const v = id => document.getElementById(id).value || '';
+  const P = data || {
+    name:  v('plyName'),
+    idc:   v('plyIdCard'),
+    exp:   v('plyIdExp'),
+    birth: v('plyBirth'),
+    age:   v('plyAge'),
+    pos:   v('plyPosition'),
+    plyId: ply.id || '',
+    photo: ply.photoData || ply.photo || ''
+  };
+  const fd = s => s ? fmtDMY(s) : '-';
+  const e = escAttr;
+  const land = orient === 'landscape';
+
+  const logo = (u) => u ? `<img src="${e(u)}" alt="">` : '<span class="nologo"></span>';
+  const photo = P.photo ? `<img src="${e(P.photo)}" alt="">` : '<div class="nophoto">👤</div>';
+
+  const rows = `
+    <div class="r"><span>الرقم المدني</span><b>${e(P.idc) || '-'}</b></div>
+    <div class="r"><span>تاريخ الميلاد</span><b>${e(fd(P.birth))}</b></div>
+    <div class="r"><span>العمر</span><b>${e(P.age) || '-'}</b></div>
+    <div class="r"><span>المركز</span><b>${e(P.pos) || '-'}</b></div>`;
+
+  const W = land ? '85.6mm' : '54mm';
+  const H = land ? '54mm'   : '85.6mm';
+
+  return `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  @page { size:${W} ${H}; margin:0; }
+  * { box-sizing:border-box; margin:0; padding:0; font-family:'Cairo',Tahoma,sans-serif;
+      -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  html,body { width:${W}; height:${H}; background:#fff; }
+  .card { width:${W}; height:${H}; overflow:hidden; display:flex; flex-direction:column;
+          border:0.3mm solid #1e3c72; border-radius:2.5mm; }
+  .hd { background:#438307; color:#fff; display:flex; align-items:center; justify-content:space-between;
+        gap:1.5mm; padding:1.5mm 2mm; height:${land ? '14mm' : '18mm'}; flex-shrink:0; }
+  .hd img, .hd .nologo { width:${land ? '10.5mm' : '11mm'}; height:${land ? '10.5mm' : '11mm'};
+        object-fit:contain; background:#fff; border-radius:50%; flex-shrink:0; }
+  .hd .nologo { display:inline-block; }
+  .hd .tt { flex:1; text-align:center; line-height:1.15; min-width:0; }
+  .hd .tt b { display:block; color:#f0b90b; font-size:${land ? '9pt' : '8pt'}; }
+  .hd .tt small { display:block; font-size:${land ? '6.5pt' : '6pt'}; opacity:.95;
+                margin-top:1.5mm; }
+  .bd { flex:1; display:flex; ${land ? 'flex-direction:row; align-items:center; gap:3mm; padding:1.5mm 3mm;' :
+                                      'flex-direction:column; align-items:center; gap:1.2mm; padding:2mm 3mm;'} min-height:0; }
+  .ph { width:${land ? '23mm' : '25mm'}; height:${land ? '29mm' : '30mm'}; border:0.4mm solid #1e3c72;
+        border-radius:2mm; overflow:hidden; background:#f0f3f9; flex-shrink:0; }
+  .ph img { width:100%; height:100%; object-fit:cover; }
+  .nophoto { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:22pt; color:#1e3c72; }
+  .info { flex:1; width:100%; min-width:0; }
+  .nm { font-size:${land ? '10pt' : '9.5pt'}; font-weight:700; color:#1e3c72; text-align:${land ? 'right' : 'center'};
+        line-height:1.2; margin-bottom:1mm; border-bottom:0.3mm solid #f0b90b; padding-bottom:0.6mm; }
+  .r { display:flex; justify-content:space-between; gap:2mm; font-size:${land ? '7pt' : '6.8pt'}; line-height:1.55; }
+  .r span { color:#555; }
+  .r b { color:#000; direction:ltr; }
+  .ft { background:#f0b90b; color:#000; font-size:6pt; font-weight:700; display:flex; justify-content:space-between;
+        padding:0.8mm 3mm; flex-shrink:0; }
+</style></head><body>
+<div class="card">
+  <div class="hd">
+    ${logo(t.TeamCloubLogo)}
+    <div class="tt"><b>${e(t.TeamName || '')}</b><small>${e(t.TeamCloub || '')}</small></div>
+    ${logo(t.TeamLogo)}
+  </div>
+  <div class="bd">
+    <div class="ph">${photo}</div>
+    <div class="info">
+      <div class="nm">${e(P.name) || '-'}</div>
+      ${rows}
+    </div>
+  </div>
+  <div class="ft"><span>رقم العضوية: ${e(P.plyId)}</span><span>ينتهي: ${e(fd(P.exp))}</span></div>
+</div></body></html>`;
+}
+
+function printIdCard(orient, data) {
+  const old = document.getElementById('printFrame');
+  if (old) old.remove();
+
+  const fr = document.createElement('iframe');
+  fr.id = 'printFrame';
+  fr.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;';
+  document.body.appendChild(fr);
+
+  const doc = fr.contentWindow.document;
+  doc.open(); doc.write(buildCardDoc(orient, data)); doc.close();
+
+  // انتظر تحميل الصور والخط قبل الطباعة (بحد أقصى 4 ثوانٍ)
+  const waits = [...doc.images].map(im =>
+    im.complete ? Promise.resolve() : new Promise(r => { im.onload = im.onerror = r; }));
+  const ready = Promise.all(waits).then(() => doc.fonts ? doc.fonts.ready : null);
+
+  Promise.race([ready, new Promise(r => setTimeout(r, 4000))]).then(() => {
+    fr.contentWindow.focus();
+    fr.contentWindow.print();
+  });
+}
+/* ============================================================
+   جدول أعضاء الفريق (يفتح من عنوان نافذة بيانات الفريق)
+   ============================================================ */
+let plyListCache = [];
+let plyListLoaded = false;
+let plyEditingId = null;
+let plySearch = '';
+let plyRowPhotoNew = '';  
+
+function openPlayersList() {
+  document.getElementById('plyListModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  if (!plyListLoaded) loadPlayersList(); else renderPlayersList();
+}
+
+function closePlayersList() {
+  document.getElementById('plyListModal').classList.remove('active');
+  // نافذة بيانات الفريق ما زالت مفتوحة تحتها، فنبقي التمرير مغلقاً
+}
+
+async function loadPlayersList() {
+  const box = document.getElementById('plyListBox');
+  plyEditingId = null;
+  box.innerHTML = '<div class="spinner" style="margin:20px auto"></div>';
+  try {
+    const data = await fetchJSON(PLAYERS_API + '?action=list&t=' + Date.now());
+    if (!data.success) {
+      box.innerHTML = `<div class="error-msg">${escAttr(data.message)}</div>`;
+      return;
+    }
+    plyListCache = data.rows || [];
+    plyListLoaded = true;
+    renderPlayersList();
+  } catch (e) {
+    box.innerHTML = `<div class="error-msg">خطأ: ${escAttr(e.message)}</div>`;
+  }
+}
+
+function plyRowToCard(r) {
+  return {
+    name: r.PLYName || '', idc: r.PLYIDCARD || '',
+    exp: normalizeDate(r.PLYIDCARDExpired) || '',
+    birth: normalizeDate(r.PLYBirthDay) || '',
+    age: r.PLYBirthDay ? plyCalcAge(normalizeDate(r.PLYBirthDay)) : (r.PLYAge || ''),
+    pos: r.PLYPosition || '', plyId: r.PLYID || '', photo: r.PLYPhoto || ''
+  };
+}
+
+function renderPlayersList() {
+  const box = document.getElementById('plyListBox');
+  let rows = plyListCache;
+
+  const q = plySearch.trim().toLowerCase();
+  if (q) {
+    rows = rows.filter(r =>
+      String(r.PLYName   || '').toLowerCase().includes(q) ||
+      String(r.PLYTel    || '').toLowerCase().includes(q) ||
+      String(r.PLYIDCARD || '').toLowerCase().includes(q) ||
+      String(r.PLYID     || '').toLowerCase().includes(q));
+  }
+  document.getElementById('plyListCount').textContent =
+    `النتائج: ${rows.length} من ${plyListCache.length}`;
+
+  if (!rows.length) {
+    box.innerHTML = '<div class="bookings-empty">لا يوجد أعضاء</div>';
+    return;
+  }
+
+  const opts = (arr, cur) => '<option value="">—</option>' +
+    arr.map(v => `<option value="${escAttr(v)}" ${v === cur ? 'selected' : ''}>${escAttr(v)}</option>`).join('');
+
+  let html = `<div style="overflow-x:auto;"><table class="bookings-table users-table ply-table">
+    <thead><tr>
+      <th>الصورة</th><th>رقم العضوية</th><th>الاسم</th><th>الهاتف</th>
+      <th>رقم البطاقة</th><th>تاريخ الانتهاء</th><th>تاريخ الميلاد</th><th>العمر</th>
+      <th>المركز</th><th>اللجنة</th><th>إجراءات</th>
+    </tr></thead><tbody>`;
+
+  rows.forEach(r => {
+    const id = r.PLYID;
+    const sid = escAttr(id);
+    const photo = r.PLYPhoto
+      ? `<img class="ply-thumb" src="${escAttr(r.PLYPhoto)}" alt="">`
+      : '<span class="ply-thumb none">👤</span>';
+    const birth = normalizeDate(r.PLYBirthDay) || '';
+    const age = birth ? plyCalcAge(birth) : (r.PLYAge || '');
+    const exp = normalizeDate(r.PLYIDCARDExpired) || '';
+
+    if (plyEditingId === id) {
+      html += `<tr class="input-row" data-plyid="${sid}">
+            <td>
+          ${r.PLYPhoto
+            ? `<img id="plyRowThumb" class="ply-thumb editable" src="${escAttr(r.PLYPhoto)}" onclick="plyRowPhotoClick()" title="اضغط لتغيير الصورة" alt="">`
+            : `<span id="plyRowThumb" class="ply-thumb none editable" onclick="plyRowPhotoClick()" title="اضغط لإضافة صورة">📷</span>`}
+          <small class="ply-photo-hint">اضغط للتغيير</small>
+        </td>
+        <td><strong>${sid}</strong></td>
+        <td><input type="text" id="pl_name_${sid}" value="${escAttr(r.PLYName)}"></td>
+        <td><input type="tel" id="pl_tel_${sid}" value="${escAttr(r.PLYTel)}" maxlength="15"></td>
+        <td><input type="text" id="pl_idc_${sid}" value="${escAttr(r.PLYIDCARD)}" inputmode="numeric" maxlength="15"></td>
+        <td><input type="date" id="pl_exp_${sid}" value="${exp}"></td>
+        <td><input type="date" id="pl_birth_${sid}" value="${birth}"
+             oninput="document.getElementById('pl_age_${sid}').value=plyCalcAge(this.value)"></td>
+        <td><input type="number" id="pl_age_${sid}" value="${escAttr(age)}" min="0" max="120"></td>
+        <td><select id="pl_pos_${sid}">${opts(PLY_POSITIONS, r.PLYPosition)}</select></td>
+        <td><select id="pl_sec_${sid}">${opts(PLY_SECTIONS, r.PLYSection)}</select></td>
+        <td style="white-space:nowrap">
+          <button class="btn small green" onclick="savePlayerRow('${sid}', this)">💾</button>
+          <button class="btn small red" onclick="plyEditingId=null;renderPlayersList();">✖</button>
+        </td></tr>`;
+    } else {
+      html += `<tr data-plyid="${sid}">
+        <td>${photo}</td>
+        <td><strong>${sid}</strong></td>
+        <td>${escAttr(r.PLYName) || '-'}</td>
+        <td>${escAttr(r.PLYTel) || '-'}</td>
+        <td>${escAttr(r.PLYIDCARD) || '-'}</td>
+        <td>${exp ? fmtDMY(exp) : '-'}</td>
+        <td>${birth ? fmtDMY(birth) : '-'}</td>
+        <td>${escAttr(age) || '-'}</td>
+        <td>${escAttr(r.PLYPosition) || '-'}</td>
+        <td>${escAttr(r.PLYSection) || '-'}</td>
+        <td style="white-space:nowrap">
+          <button class="btn small goldEdit" onclick="plyEditingId='${sid}';renderPlayersList();">✏️</button>
+          <button class="btn small" onclick="printPlayerRow('${sid}')" title="طباعة البطاقة">🖨️</button>
+        </td></tr>`;
+    }
+  });
+
+  html += '</tbody></table></div>';
+  box.innerHTML = html;
+}
+
+function printPlayerRow(id) {
+  const r = plyListCache.find(x => String(x.PLYID) === String(id));
+  if (!r) return;
+  openPrintDialog(plyRowToCard(r));
+}
+
+async function savePlayerRow(id, btnEl) {
+  const r = plyListCache.find(x => String(x.PLYID) === String(id));
+  if (!r) return;
+  const g = k => document.getElementById(`pl_${k}_${id}`).value.trim();
+
+  const name = g('name'), tel = g('tel');
+  if (!name || !tel) { alert('الاسم والهاتف مطلوبان'); return; }
+
+  if (btnEl.dataset.busy === '1') return;
+  btnEl.dataset.busy = '1';
+  btnEl.classList.add('loading');
+  btnEl.disabled = true;
+
+  const upd = {
+    PLYID: id, PLYName: name, PLYTel: tel,
+    PLYBirthDay: g('birth'), PLYAge: g('age'),
+    PLYPosition: g('pos'), PLYSection: g('sec'),
+    PLYPhoto: plyRowPhotoNew || r.PLYPhoto || '',
+    PLYIDCARD: g('idc'), PLYIDCARDExpired: g('exp')
+  };
+
+  try {
+    const res = await fetch(PLAYERS_API, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'save', ...upd })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message);
+
+    Object.assign(r, upd);
+    plyEditingId = null;
+     plyRowPhotoNew = '';
+    renderPlayersList();
+  } catch (e) {
+    alert('خطأ: ' + e.message);
+    btnEl.classList.remove('loading');
+    btnEl.disabled = false;
+    btnEl.dataset.busy = '0';
+  }
+}
+function resizePhotoFile(file, cb) {
+  const MAX_CHARS = 45000;
+  const rd = new FileReader();
+  rd.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      let size = 300, q = 0.8, out = '';
+      for (let i = 0; i < 15; i++) {
+        const k = Math.min(1, size / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width  = Math.max(1, Math.round(img.width  * k));
+        c.height = Math.max(1, Math.round(img.height * k));
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, c.width, c.height);
+        ctx.drawImage(img, 0, 0, c.width, c.height);
+        out = c.toDataURL('image/jpeg', q);
+        if (out.length <= MAX_CHARS) break;
+        if (q > 0.5) q -= 0.1; else size = Math.round(size * 0.85);
+      }
+      if (out.length > MAX_CHARS) { alert('تعذّر تصغير الصورة بما يكفي، اختر صورة أخرى'); return; }
+      cb(out);
+    };
+    img.onerror = () => alert('ملف الصورة غير صالح');
+    img.src = ev.target.result;
+  };
+  rd.readAsDataURL(file);
+}
+
+function plyRowPhotoClick() { document.getElementById('plyRowPhotoInput').click(); }
+
+function plyRowPickPhoto(e) {
+  const f = e.target.files[0];
+  e.target.value = '';
+  if (!f) return;
+  resizePhotoFile(f, out => {
+    plyRowPhotoNew = out;
+    const img = document.getElementById('plyRowThumb');
+    if (img) img.outerHTML = `<img id="plyRowThumb" class="ply-thumb editable" src="${out}" onclick="plyRowPhotoClick()" alt="">`;
+  });
 }
 
 
