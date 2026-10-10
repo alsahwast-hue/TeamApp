@@ -470,6 +470,19 @@
   gap: 12px; color: #1e3c72; font-weight: 700; font-size: 14px;
   border-radius: 0 0 20px 20px;
 }
+/* ===== بيانات الفريق: عمودان دائماً ===== */
+.team-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;   /* عمودان في جميع الشاشات */
+  gap: 8px;
+  margin-bottom: 10px;
+}
+#teamModal .team-row .field input {
+  padding: 9px 6px;
+  font-size: 13px;
+  min-width: 0;
+}
+#teamModal .team-row .field label { font-size: 13px; }
 /* ===== طلباتي ===== */
 .badge.pending   { background: #fff3cd; color: #856404; }
 .badge.confirmed { background: #d4edda; color: #155724; }
@@ -842,6 +855,73 @@ body.has-install-bar { padding-bottom: 80px; }
 .sub-suggest .sg-item.active { background: #fffbe6; }
 .sub-suggest .sg-tel { direction: ltr; color: #666; font-size: 12px; font-weight: 600; }
 .sub-suggest .sg-empty { padding: 12px; text-align: center; color: #888; font-size: 13px; }
+/* ===== نافذة الخطة ===== */
+#tacticModal { z-index: 2600; }
+#tcPickModal { z-index: 2700; }
+.tc-controls { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:5px; }
+
+.tc-pitch {
+  position: relative; 
+  width: 100%; 
+  max-width: 340px; 
+  margin: 0 auto;
+  height: min(80vw, 380px);   /* ← 80% من عرض الشاشة أو 380px أيهما أصغر */
+  border-radius: 12px; 
+  overflow: visible;
+}
+.tc-pitch > svg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  display: block; border-radius: 12px;
+}
+.tc-slot { position: absolute; width: 14%; transform: translate(-50%, -50%); cursor: pointer; text-align: center; }
+.tc-circle {
+  width: 100%; aspect-ratio: 1 / 1; border-radius: 50%;
+  border: 3px solid #fff; background: #e8eefb; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  font-size: clamp(14px, 4vw, 24px); color: #1e3c72;
+  box-shadow: 0 3px 8px rgba(0,0,0,.35); transition: .15s;
+}
+.tc-circle.empty {
+  background: rgba(255,255,255,.2); border-style: dashed;
+  color: #fff; font-weight: 700;
+}
+.tc-circle img { width: 100%; height: 100%; object-fit: cover; }
+.tc-slot:hover .tc-circle { transform: scale(1.08); border-color: #f0b90b; }
+.tc-name {
+  position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  margin-top: 3px; width: max-content; max-width: 150%;
+  background: rgba(15,32,39,.85); color: #fff;
+  font-size: clamp(9px, 2.5vw, 12px); font-weight: 700;
+  padding: 1px 6px; border-radius: 8px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.tc-bench-title { text-align:center; font-weight:700; color:#1e3c72; margin:14px 0 6px; }
+.tc-bench {
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 28px 10px; background: #16323d; border-radius: 12px;
+  padding: 16px 8px 32px;
+}
+.tc-bench .tc-slot { 
+  position: relative; 
+  transform: none; 
+  width: 48px;       /* ← نفس حجم دوائر الملعب تقريباً */
+}
+.tc-pick-list { max-height: 50vh; overflow-y: auto; margin: 10px 0; border: 1px solid #eee; border-radius: 10px; }
+.tc-pick-item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-bottom:1px solid #eee; cursor:pointer; }
+.tc-pick-item:last-child { border-bottom:none; }
+.tc-pick-item:hover { background:#fffbe6; }
+.tc-pick-item .nm { flex:1; font-weight:700; color:#1e3c72; font-size:14px; }
+.tc-pick-item .ps { font-size:12px; color:#666; font-weight:600; }
+.tc-pick-empty { text-align:center; color:#888; padding:24px 10px; font-size:14px; }
+.tc-formation-row { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+.tc-formation-row label { font-weight:700; color:#1e3c72; white-space:nowrap; margin:0; }
+.tc-formation-row input {
+  flex:1; min-width:0; padding:12px; border:2px solid #e0e0e0; border-radius:10px;
+  font-size:15px; font-weight:700; text-align:center; background:#fff;
+}
+.tc-formation-row input:focus { border-color:#2a5298; outline:none; }
+.tc-formation-err { color:#c0392b; font-size:12px; font-weight:700; min-height:16px; margin-bottom:6px; }
 
 </style>
 </head>
@@ -1039,9 +1119,12 @@ body.has-install-bar { padding-bottom: 80px; }
 <div class="modal-overlay" id="teamModal">
   <div class="modal">
     <div class="modal-header">
-            <h3 class="clickable" onclick="openPlayersList()" title="عرض جدول الأعضاء">👥 بيانات الفريق</h3>
-      <button class="close-btn" onclick="closeTeamModal()">✖</button>
-    </div>
+  <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+    <h3 class="clickable" onclick="openPlayersList()" title="عرض جدول الأعضاء">👥 بيانات الفريق</h3>
+    <h3 class="clickable" onclick="openTacticModal()" title="تشكيل الخطة">⚽ خطة</h3>
+  </div>
+  <button class="close-btn" onclick="closeTeamModal()">✖</button>
+</div>
     <div class="modal-body">
       <div class="modal-loading" id="teamLoading">
         <div class="spinner"></div>
@@ -1075,22 +1158,26 @@ body.has-install-bar { padding-bottom: 80px; }
         </div>
       </div>
 
-      <div class="field">
-        <label>اسم الفريق</label>
-        <input type="text" id="teamNameField" placeholder="مثال: فريق الأهلي">
+      <div class="team-row">
+        <div class="field">
+          <label>اسم الفريق</label>
+          <input type="text" id="teamNameField" placeholder="مثال: فريق الأهلي">
+        </div>
+        <div class="field">
+          <label>سنة تأسيس الفريق</label>
+          <input type="number" id="teamOldField" placeholder="مثال: 1995" min="1900" max="2100">
+        </div>
       </div>
 
-      <div class="field">
-        <label>اسم النادي</label>
-        <input type="text" id="teamClubField" placeholder="مثال: نادي ظفار">
-      </div>
+      <div class="team-row">
         <div class="field">
-        <label>سنة تأسيس النادي</label>
-        <input type="number" id="cloubOldField" placeholder="مثال: 1980" min="1900" max="2100">
-      </div>
-      <div class="field">
-        <label>سنة الفريق (التأسيس)</label>
-        <input type="number" id="teamOldField" placeholder="مثال: 1995" min="1900" max="2100">
+          <label>اسم النادي</label>
+          <input type="text" id="teamClubField" placeholder="مثال: نادي ظفار">
+        </div>
+        <div class="field">
+          <label>سنة تأسيس النادي</label>
+          <input type="number" id="cloubOldField" placeholder="مثال: 1980" min="1900" max="2100">
+        </div>
       </div>
 
       <button class="btn gold" id="saveTeamBtn" onclick="saveTeamData()">💾 حفظ بيانات الفريق</button>
@@ -1524,6 +1611,67 @@ body.has-install-bar { padding-bottom: 80px; }
         <button class="btn green" onclick="confirmPrintCard()">🖨️ طباعة</button>
         <button class="btn red" onclick="closePrintDialog()">إلغاء</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ نافذة الخطة ============ -->
+<div class="modal-overlay" id="tacticModal">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-header">
+      <h3>⚽ تشكيل الخطة</h3>
+      <button class="close-btn" onclick="closeTacticModal()">✖</button>
+    </div>
+    <div class="modal-body">
+      <div class="tc-controls">
+        <div class="field">
+          <label>العدد (مع الحارس)</label>
+          <input type="number" id="tcCount" min="5" max="11" value="11" onchange="onTcCountChange()">
+        </div>
+        <div class="field">
+          <label>عدد الاحتياط</label>
+          <input type="number" id="tcSubs" min="0" max="9" value="5" onchange="onTcSubsChange()">
+        </div>
+      </div>
+     <div class="tc-formation-row">
+  <label for="tcFormation">الخطة</label>
+  <input type="text" id="tcFormation" list="tcFormationList" dir="ltr"
+         placeholder="مثال: 4-4-2" autocomplete="off"
+         onchange="onTcFormationChange()" onfocus="this.select()">
+  <datalist id="tcFormationList"></datalist>
+</div>
+<div id="tcFormationErr" class="tc-formation-err"></div>
+
+      <div class="tc-pitch" id="tcPitch"></div>
+
+      <div id="tcBenchWrap" style="display:none;">
+        <div class="tc-bench-title">🪑 الاحتياط</div>
+        <div class="tc-bench" id="tcBench"></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-top:16px;">
+        <button class="btn green" onclick="saveTacticImage(this)">🖼️ حفظ الملعب كصورة</button>
+        <button class="btn" onclick="reloadTacticPlayers()">🔄 الأعضاء</button>
+      </div>
+      <div id="tcMsg" class="team-form-msg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ نافذة اختيار لاعب للخطة ============ -->
+<div class="modal-overlay" id="tcPickModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <h3 id="tcPickTitle">اختر لاعباً</h3>
+      <button class="close-btn" onclick="closeTacticPick()">✖</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>المركز</label>
+        <select id="tcPickFilter" onchange="renderTacticPick()"></select>
+      </div>
+      <div class="tc-pick-list" id="tcPickList"></div>
+      <button class="btn red" onclick="tcClearSlot()">🗑 إزالة اللاعب من المركز</button>
     </div>
   </div>
 </div>
@@ -5556,6 +5704,474 @@ function plyRowPickPhoto(e) {
     if (img) img.outerHTML = `<img id="plyRowThumb" class="ply-thumb editable" src="${out}" onclick="plyRowPhotoClick()" alt="">`;
   });
 }
+
+/* ============================================================
+   الخطة (تشكيل الملعب)
+   ============================================================ */
+const TC_ALLOWED  = ['حارس','مدافع','ظهير','وسط','جناح','هجوم'];
+const TC_ROLE_POS = {
+  gk:  ['حارس'],
+  def: ['مدافع','ظهير'],
+  mid: ['وسط','جناح'],
+  att: ['هجوم','جناح'],
+  sub: TC_ALLOWED
+};
+const TC_ROLE_NAME = { gk:'الحارس', def:'الدفاع', mid:'الوسط', att:'الهجوم', sub:'الاحتياط' };
+
+/* الخطط الشائعة تظهر أولاً (حسب عدد اللاعبين بدون الحارس) */
+const TC_POPULAR = {
+  10: ['4-4-2','4-3-3','3-5-2','4-2-3-1','3-4-3','5-3-2','4-5-1','5-4-1','4-2-4','4-1-4-1','3-4-2-1','3-4-1-2','4-3-2-1'],
+  9:  ['4-3-2','3-4-2','3-3-3','4-4-1','3-5-1','4-2-3'],
+  8:  ['4-2-2','2-4-2','3-2-3','3-3-2','3-4-1','4-3-1'],
+  7:  ['3-2-2','2-3-2','3-3-1','2-2-3'],
+  6:  ['2-3-1','3-2-1','2-2-2','3-1-2'],
+  5:  ['2-2-1','2-1-2','1-2-2'],
+  4:  ['2-1-1','1-2-1','1-1-2']
+};
+
+let tc = { n: 11, subs: 5, formation: '', assign: {} };
+let tcPickKey = null, tcPickRole = null;
+
+/* خلفية الملعب (SVG) تُستخدم في الشاشة وفي الصورة المحفوظة */
+const TC_PITCH_SVG = (() => {
+  let s = '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="900" viewBox="0 0 600 900" preserveAspectRatio="none">';
+  for (let i = 0; i < 10; i++)
+    s += `<rect x="0" y="${i * 90}" width="600" height="90" fill="${i % 2 ? '#35a043' : '#2e8b3d'}"/>`;
+  s += '<g fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="3">' +
+       '<rect x="10" y="10" width="580" height="880"/>' +
+       '<line x1="10" y1="450" x2="590" y2="450"/>' +
+       '<circle cx="300" cy="450" r="70"/>' +
+       '<rect x="150" y="10" width="300" height="140"/><rect x="230" y="10" width="140" height="50"/>' +
+       '<rect x="150" y="750" width="300" height="140"/><rect x="230" y="840" width="140" height="50"/>' +
+       '</g><circle cx="300" cy="450" r="5" fill="#fff" fill-opacity=".85"/></svg>';
+  return s;
+})();
+
+/* ===== توليد الخطط حسب عدد اللاعبين (بدون الحارس) ===== */
+function tcFormations(n) {
+  const set = new Set();
+  const small = n < 6;
+
+  for (let d = 1; d <= n; d++) {
+    for (let m = 1; m <= n; m++) {
+      const a = n - d - m;
+      if (a < 1) continue;
+      if (!small && (d < 2 || d > 5 || m < 2 || m > 6 || a > 4)) continue;
+      set.add(`${d}-${m}-${a}`);
+    }
+  }
+  if (n >= 8) {   // خطط بأربعة خطوط مثل 4-2-3-1
+    for (let d = 3; d <= 5; d++)
+      for (let m1 = 1; m1 <= 4; m1++)
+        for (let m2 = 1; m2 <= 4; m2++) {
+          const a = n - d - m1 - m2;
+          if (a >= 1 && a <= 3) set.add(`${d}-${m1}-${m2}-${a}`);
+        }
+  }
+
+  const all = [...set];
+  const pop = (TC_POPULAR[n] || []).filter(f => set.has(f));
+  const spread = f => { const p = f.split('-').map(Number); return Math.max(...p) - Math.min(...p); };
+  const rest = all.filter(f => !pop.includes(f))
+                  .sort((x, y) => spread(x) - spread(y) || x.localeCompare(y));
+  return [...pop, ...rest];
+}
+
+function tcLines(f)  { return String(f).split('-').map(Number).filter(Boolean); }
+function tcRoles(len) {
+  if (len === 1) return ['att'];
+  if (len === 2) return ['def', 'att'];
+  if (len === 3) return ['def', 'mid', 'att'];
+  return ['def', ...Array(len - 2).fill('mid'), 'att'];
+}
+function tcPlayer(id) { return id ? plyListCache.find(p => String(p.PLYID) === String(id)) || null : null; }
+
+function tcShortName(full) {
+  const p = String(full || '').trim().split(/\s+/).filter(Boolean);
+  if (!p.length) return '';
+  return p.length === 1 ? p[0] : p[0] + ' ' + p[p.length - 1];
+}
+
+function tcClearOutfield() {
+  Object.keys(tc.assign).forEach(k => { if (k[0] === 'L') delete tc.assign[k]; });
+}
+
+/* ===== فتح/إغلاق ===== */
+async function openTacticModal() {
+  document.getElementById('tcMsg').innerHTML = '';
+  document.getElementById('tcCount').value = tc.n;
+  document.getElementById('tcSubs').value  = tc.subs;
+  tcFillFormationSelect();
+  renderTactic();
+  document.getElementById('tacticModal').classList.add('active');
+
+  if (!plyListLoaded) { await ensurePlayersLoaded(); renderTactic(); }
+}
+
+function closeTacticModal() {
+  document.getElementById('tacticModal').classList.remove('active');
+}
+
+document.getElementById('tacticModal').addEventListener('click', function (e) {
+  if (e.target === this) closeTacticModal();
+});
+
+async function reloadTacticPlayers() {
+  plyListLoaded = false;
+  await ensurePlayersLoaded();
+  renderTactic();
+}
+
+/* ===== التحكم بالأعداد والخطة ===== */
+function tcFillFormationSelect() {
+  const list = tcFormations(tc.n - 1);
+  document.getElementById('tcFormationList').innerHTML =
+    list.map(f => `<option value="${f}">`).join('');
+
+  const input = document.getElementById('tcFormation');
+  // الخطة الحالية صالحة؟ (مجموعها = عدد اللاعبين بدون الحارس)
+  if (!tcValidFormation(tc.formation)) tc.formation = list[0] || '';
+  input.value = tc.formation;
+  document.getElementById('tcFormationErr').textContent = '';
+}
+
+/* التحقق من الخطة المكتوبة */
+function tcValidFormation(f) {
+  if (!/^\d{1,2}(-\d{1,2}){1,4}$/.test(String(f || '').trim())) return false;
+  const parts = f.split('-').map(Number);
+  if (parts.some(p => p < 1)) return false;
+  return parts.reduce((a, b) => a + b, 0) === tc.n - 1;
+}
+
+function onTcFormationChange() {
+  const input = document.getElementById('tcFormation');
+  const err   = document.getElementById('tcFormationErr');
+  const v = input.value.trim().replace(/[\s_.\/،,]+/g, '-');   // يقبل 442 غير مقبولة، لكن يقبل 4 4 2 و 4.4.2
+  input.value = v;
+
+  if (!tcValidFormation(v)) {
+    err.textContent = `الخطة غير صالحة: يجب أن يكون مجموع الأرقام ${tc.n - 1} (بدون الحارس)، مثال: ${tcFormations(tc.n - 1)[0] || ''}`;
+    return;   // نُبقي الخطة السابقة مرسومة
+  }
+  err.textContent = '';
+  tc.formation = v;
+  tcClearOutfield();
+  renderTactic();
+}
+
+function onTcSubsChange() {
+  let s = parseInt(document.getElementById('tcSubs').value, 10);
+  s = Math.min(9, Math.max(0, isNaN(s) ? 0 : s));
+  document.getElementById('tcSubs').value = s;
+  tc.subs = s;
+  Object.keys(tc.assign).forEach(k => {
+    if (k[0] === 'S' && parseInt(k.slice(1), 10) >= s) delete tc.assign[k];
+  });
+  renderTactic();
+}
+
+function onTcCountChange() {
+  let n = parseInt(document.getElementById('tcCount').value, 10);
+  n = Math.min(11, Math.max(5, isNaN(n) ? 11 : n));
+  document.getElementById('tcCount').value = n;
+  tc.n = n;
+
+  tc.formation = '';          // الخطة القديمة لم تعد مناسبة
+  tcClearOutfield();          // امسح لاعبي الملعب (الحارس يبقى)
+  tcFillFormationSelect();    // يولّد الخطط حسب العدد الجديد ويختار أولها
+  renderTactic();
+}
+
+/* ===== رسم الملعب على الشاشة ===== */
+function tcSlotHtml(key, role, style) {
+  const p = tcPlayer(tc.assign[key]);
+  const inner = p
+    ? (p.PLYPhoto ? `<img src="${escAttr(p.PLYPhoto)}" alt="">` : '👤')
+    : '+';
+  return `<div class="tc-slot" ${style ? `style="${style}"` : ''}
+      onclick="openTacticPick('${key}','${role}')">
+      <div class="tc-circle ${p ? '' : 'empty'}">${inner}</div>
+      ${p ? `<div class="tc-name">${escAttr(tcShortName(p.PLYName))}</div>` : ''}
+    </div>`;
+}
+
+function tcPositions() {
+  const lines = tcLines(tc.formation);
+  const roles = tcRoles(lines.length);
+  const L = lines.length;
+  const out = [{ key: 'gk', role: 'gk', x: 50, y: 88 }];   // ← رجّعها 88
+  lines.forEach((cnt, i) => {
+    const y = L === 1 ? 50 : 72 - i * (58 / (L - 1));      // ← رجّعها للقيم الأصلية
+    for (let j = 0; j < cnt; j++) {
+      out.push({ key: `L${i}_${j}`, role: roles[i], x: ((j + 1) / (cnt + 1)) * 100, y });
+    }
+  });
+  return out;
+}
+
+function renderTactic() {
+  const pitch = document.getElementById('tcPitch');
+  let html = TC_PITCH_SVG;
+  tcPositions().forEach(s => {
+    html += tcSlotHtml(s.key, s.role, `left:${s.x}%;top:${s.y}%`);
+  });
+  pitch.innerHTML = html;
+
+  const wrap = document.getElementById('tcBenchWrap');
+  if (tc.subs > 0) {
+    let b = '';
+    for (let i = 0; i < tc.subs; i++) b += tcSlotHtml('S' + i, 'sub', '');
+    document.getElementById('tcBench').innerHTML = b;
+    wrap.style.display = '';
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
+/* ===== اختيار لاعب لدائرة ===== */
+function openTacticPick(key, role) {
+  tcPickKey = key; tcPickRole = role;
+  document.getElementById('tcPickTitle').textContent = 'اختر ' + TC_ROLE_NAME[role];
+
+  const sel = document.getElementById('tcPickFilter');
+  sel.innerHTML =
+    `<option value="auto">حسب الخط (${TC_ROLE_POS[role].join(' / ')})</option>` +
+    `<option value="all">كل المراكز</option>` +
+    TC_ALLOWED.map(p => `<option value="${p}">${p}</option>`).join('');
+  sel.value = 'auto';
+
+  renderTacticPick();
+  document.getElementById('tcPickModal').classList.add('active');
+}
+
+function closeTacticPick() {
+  document.getElementById('tcPickModal').classList.remove('active');
+}
+
+document.getElementById('tcPickModal').addEventListener('click', function (e) {
+  if (e.target === this) closeTacticPick();
+});
+
+function renderTacticPick() {
+  const box = document.getElementById('tcPickList');
+  const f = document.getElementById('tcPickFilter').value;
+  const positions = f === 'auto' ? TC_ROLE_POS[tcPickRole]
+                  : f === 'all'  ? TC_ALLOWED
+                  : [f];
+
+  /* استبعاد اللاعبين المستخدمين في دوائر أخرى */
+  const used = new Set(
+    Object.entries(tc.assign).filter(([k]) => k !== tcPickKey).map(([, v]) => String(v)));
+
+  const list = plyListCache
+    .filter(p => positions.includes(String(p.PLYPosition || '').trim()) && !used.has(String(p.PLYID)))
+    .sort((a, b) => String(a.PLYName || '').localeCompare(String(b.PLYName || ''), 'ar'));
+
+  if (!list.length) {
+    box.innerHTML = '<div class="tc-pick-empty">لا يوجد أعضاء بهذا المركز</div>';
+    return;
+  }
+
+  box.innerHTML = list.map(p => `
+    <div class="tc-pick-item" onclick="tcAssign('${escAttr(p.PLYID)}')">
+      ${p.PLYPhoto
+        ? `<img class="ply-thumb" src="${escAttr(p.PLYPhoto)}" alt="">`
+        : '<span class="ply-thumb none">👤</span>'}
+      <span class="nm">${escAttr(p.PLYName || '-')}</span>
+      <span class="ps">${escAttr(p.PLYPosition || '')}</span>
+    </div>`).join('');
+}
+
+function tcAssign(id) {
+  tc.assign[tcPickKey] = id;
+  closeTacticPick();
+  renderTactic();
+}
+
+function tcClearSlot() {
+  delete tc.assign[tcPickKey];
+  closeTacticPick();
+  renderTactic();
+}
+
+/* ============================================================
+   حفظ الملعب كصورة (رسم مباشر على canvas)
+   ============================================================ */
+function tcLoadImg(src, cors) {
+  return new Promise(res => {
+    if (!src) return res(null);
+    const im = new Image();
+    if (cors && !/^data:/.test(src)) im.crossOrigin = 'anonymous';
+    im.onload  = () => res(im);
+    im.onerror = () => res(null);
+    im.src = src;
+  });
+}
+
+function tcRoundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+async function saveTacticImage(btn) {
+  const msg = document.getElementById('tcMsg');
+  msg.innerHTML = '';
+  btn.disabled = true;
+  const oldTxt = btn.textContent;
+  btn.textContent = '⏳ جارٍ التجهيز...';
+
+  try {
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+
+    const W = 900, headerH = 110, pitchH = 1350;
+    const perRow = 6, rowH = 190;
+    const rows = Math.ceil(tc.subs / perRow);
+    const benchH = tc.subs ? 80 + rows * rowH : 0;
+    const H = headerH + pitchH + benchH;
+
+    const cv = document.createElement('canvas');
+    cv.width = W; cv.height = H;
+    const ctx = cv.getContext('2d');
+    ctx.direction = 'rtl';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    /* الخلفية + الترويسة */
+    ctx.fillStyle = '#0f2027';
+    ctx.fillRect(0, 0, W, H);
+    const g = ctx.createLinearGradient(0, 0, W, 0);
+    g.addColorStop(0, '#1e3c72'); g.addColorStop(1, '#2a5298');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, headerH);
+
+    const team = (typeof getTeamInfoForCard === 'function' ? getTeamInfoForCard() : {}) || {};
+    ctx.fillStyle = '#f0b90b';
+    ctx.font = '700 42px Cairo, Tahoma, sans-serif';
+    ctx.fillText(team.TeamName || 'تشكيلة الفريق', W / 2, 40);
+    ctx.fillStyle = '#fff';
+    ctx.font = '700 34px Cairo, Tahoma, sans-serif';
+    ctx.direction = 'ltr';
+    ctx.fillText(tc.formation, W / 2, 84);
+    ctx.direction = 'rtl';
+
+    /* الملعب */
+    const pitchImg = await tcLoadImg(
+      'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(TC_PITCH_SVG), false);
+    if (pitchImg) ctx.drawImage(pitchImg, 0, headerH, W, pitchH);
+    else { ctx.fillStyle = '#2e8b3d'; ctx.fillRect(0, headerH, W, pitchH); }
+
+    /* تحميل صور اللاعبين */
+    const imgs = {};
+    await Promise.all(Object.values(tc.assign).map(async id => {
+      const p = tcPlayer(id);
+      if (p && p.PLYPhoto && !(id in imgs)) imgs[id] = await tcLoadImg(p.PLYPhoto, true);
+    }));
+
+    const drawLabel = (text, cx, y, maxW) => {
+      let size = 26;
+      ctx.font = `700 ${size}px Cairo, Tahoma, sans-serif`;
+      while (size > 14 && ctx.measureText(text).width > maxW - 24) {
+        size -= 2;
+        ctx.font = `700 ${size}px Cairo, Tahoma, sans-serif`;
+      }
+      const w = Math.min(maxW, ctx.measureText(text).width + 24);
+      ctx.fillStyle = 'rgba(15,32,39,.88)';
+      tcRoundRect(ctx, cx - w / 2, y, w, 36, 18);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.fillText(text, cx, y + 19);
+    };
+
+    const drawSlot = (key, cx, cy, r, maxW) => {
+      const id = tc.assign[key];
+      const p = tcPlayer(id);
+
+      ctx.save();
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.closePath();
+      if (p) {
+        ctx.clip();
+        const im = imgs[id];
+        if (im) {
+          const sc = Math.max(2 * r / im.width, 2 * r / im.height);
+          const dw = im.width * sc, dh = im.height * sc;
+          ctx.drawImage(im, cx - dw / 2, cy - dh / 2, dw, dh);
+        } else {
+          ctx.fillStyle = '#e8eefb'; ctx.fillRect(cx - r, cy - r, 2 * r, 2 * r);
+          ctx.fillStyle = '#1e3c72'; ctx.font = `${r}px sans-serif`;
+          ctx.fillText('👤', cx, cy);
+        }
+        ctx.restore();
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.lineWidth = 5; ctx.strokeStyle = '#fff'; ctx.stroke();
+        drawLabel(tcShortName(p.PLYName), cx, cy + r + 8, maxW);
+      } else {
+        ctx.fillStyle = 'rgba(255,255,255,.2)'; ctx.fill();
+        ctx.restore();
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.setLineDash([10, 8]); ctx.lineWidth = 4; ctx.strokeStyle = '#fff'; ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#fff'; ctx.font = `700 ${r}px Cairo, sans-serif`;
+        ctx.fillText('+', cx, cy + 2);
+      }
+    };
+
+    /* دوائر الملعب */
+    const lines = tcLines(tc.formation);
+    tcPositions().forEach(s => {
+      const cnt = s.key === 'gk' ? 1 : lines[parseInt(s.key.slice(1), 10)];
+      const maxW = s.key === 'gk' ? 260 : (W / (cnt + 1)) * 1.05;
+      drawSlot(s.key, (s.x / 100) * W, headerH + (s.y / 100) * pitchH, W * 0.06, maxW);
+    });
+
+    /* الاحتياط */
+    if (tc.subs) {
+      const top = headerH + pitchH;
+      ctx.fillStyle = '#16323d';
+      ctx.fillRect(0, top, W, benchH);
+      ctx.fillStyle = '#f0b90b';
+      ctx.font = '700 36px Cairo, Tahoma, sans-serif';
+      ctx.fillText('الاحتياط', W / 2, top + 42);
+
+      for (let i = 0; i < tc.subs; i++) {
+        const row = Math.floor(i / perRow);
+        const inRow = Math.min(perRow, tc.subs - row * perRow);
+        const col = i - row * perRow;
+        const cx = ((col + 1) / (inRow + 1)) * W;
+        const cy = top + 80 + row * rowH + 52;
+        drawSlot('S' + i, cx, cy, 46, (W / (inRow + 1)) * 1.05);
+      }
+    }
+
+    /* تنزيل الصورة */
+    cv.toBlob(blob => {
+      if (!blob) { msg.innerHTML = '<div class="error-msg">تعذّر إنشاء الصورة</div>'; return; }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'خطة-' + tc.formation + '.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      msg.innerHTML = '<div class="success-msg">✅ تم حفظ الصورة</div>';
+    }, 'image/png');
+  } catch (e) {
+    msg.innerHTML = `<div class="error-msg">تعذّر حفظ الصورة: ${escAttr(e.message)}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = oldTxt;
+  }
+}
+
+
+
+
+
 
 
 /* ============================================================
