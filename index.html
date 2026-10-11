@@ -922,6 +922,34 @@ body.has-install-bar { padding-bottom: 80px; }
 }
 .tc-formation-row input:focus { border-color:#2a5298; outline:none; }
 .tc-formation-err { color:#c0392b; font-size:12px; font-weight:700; min-height:16px; margin-bottom:6px; }
+/* ===== المباريات ===== */
+.mt-table input[type="date"], .mt-table input[type="time"], .mt-table input[type="text"], .mt-table select {
+  font-family:'Cairo',sans-serif; font-size:12px; padding:6px 4px; width:100%; min-width:100px;
+  border:1px solid #d4a017; border-radius:6px; text-align:center; background:#fff;
+}
+.mt-table td, .mt-table th { white-space:nowrap; }
+.mt-logo { width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid #2a5298; background:#f8faff; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; }
+.mt-logo.none { cursor:default; color:#2a5298; font-size:16px; }
+.mt-logo.editable { border:2px dashed #f0b90b; cursor:pointer; }
+.mt-logo.editable:hover { transform:scale(1.12); }
+.mt-photos { display:flex; gap:8px; justify-content:center; }
+.mt-photos small { display:block; font-size:10px; color:#666; }
+.mt-detail td { background:#f5f7fa !important; white-space:normal !important; text-align:right !important; padding:10px !important; }
+.mt-sides { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media (max-width:700px){ .mt-sides { grid-template-columns:1fr; } }
+.mt-side { background:#fff; border:2px solid #2a5298; border-radius:12px; padding:10px; }
+.mt-side h4 { color:#1e3c72; text-align:center; margin-bottom:8px; font-size:15px; }
+.mt-sub { font-weight:700; color:#1e3c72; font-size:13px; margin:8px 0 4px; }
+.mt-ent { display:grid; grid-template-columns:2fr .8fr 1fr auto; gap:4px; margin-bottom:4px; }
+.mt-ent.card { grid-template-columns:2fr 1.1fr .7fr 1fr auto; }
+.mt-ent input, .mt-ent select { min-width:0; padding:6px 4px; border:1px solid #d4a017; border-radius:6px; font-family:'Cairo',sans-serif; font-size:12px; width:100%; }
+.mt-total { display:flex; align-items:center; gap:8px; margin-top:10px; background:#fffbe6; border:1px solid #f0b90b; border-radius:8px; padding:6px 10px; }
+.mt-total label { font-weight:700; color:#1e3c72; font-size:13px; white-space:nowrap; }
+.mt-total input { width:80px; padding:6px; border:1px solid #d4a017; border-radius:6px; text-align:center; font-weight:700; }
+.mt-view-line { font-size:13px; margin:3px 0; }
+#matchAdModal { z-index:2600; }
+#matchAdBox canvas { width:100%; height:auto; border-radius:12px; display:block; }
+
 
 </style>
 </head>
@@ -1122,6 +1150,7 @@ body.has-install-bar { padding-bottom: 80px; }
   <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
     <h3 class="clickable" onclick="openPlayersList()" title="عرض جدول الأعضاء">👥 بيانات الفريق</h3>
     <h3 class="clickable" onclick="openTacticModal()" title="تشكيل الخطة">⚽ خطة</h3>
+    <h3 class="clickable" onclick="openMatchList()" title=" المباريات">🏟️ المباريات</h3>
   </div>
   <button class="close-btn" onclick="closeTeamModal()">✖</button>
 </div>
@@ -1672,6 +1701,50 @@ body.has-install-bar { padding-bottom: 80px; }
       </div>
       <div class="tc-pick-list" id="tcPickList"></div>
       <button class="btn red" onclick="tcClearSlot()">🗑 إزالة اللاعب من المركز</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============ نافذة المباريات ============ -->
+<div class="modal-overlay" id="matchListModal" style="padding:0;">
+  <div class="modal" style="max-width:100%;width:100%;height:100vh;max-height:100vh;border-radius:0;display:flex;flex-direction:column;">
+    <div class="modal-header" style="border-radius:0;flex-shrink:0;">
+      <h3>🏟️ جدول المباريات</h3>
+      <button class="close-btn" onclick="closeMatchList()">✖</button>
+    </div>
+    <div class="modal-body" style="flex:1;overflow-y:auto;padding:18px;">
+      <div class="admin-toolbar" style="margin-bottom:12px;">
+        <button class="btn small green" id="mtAddBtn" onclick="mtStartAdd()">➕ إضافة مباراة</button>
+        <button class="btn small" onclick="loadMatchList()">🔄 تحديث</button>
+        <span class="subs-count" style="margin-inline-start:auto;" id="mtCount"></span>
+      </div>
+      <div class="subs-searchbar">
+        <input type="text" id="mtSearchInput" placeholder="الفريق أو النوع أو الرقم"
+               oninput="mtSearch=this.value;renderMatchList();">
+        <button class="btn small red" onclick="mtSearch='';document.getElementById('mtSearchInput').value='';renderMatchList();">✖</button>
+      </div>
+      <input type="file" id="mtPhotoInput" accept="image/*" style="display:none" onchange="mtOnPhoto(event)">
+      <datalist id="mtPlayersDl"></datalist>
+      <div id="mtListBox">جارٍ التحميل...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ نافذة إعلان المباراة ============ -->
+<div class="modal-overlay" id="matchAdModal">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-header">
+      <h3>📢 إعلان المباراة</h3>
+      <button class="close-btn" onclick="closeMatchAd()">✖</button>
+    </div>
+    <div class="modal-body">
+      <div id="matchAdBox"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;">
+        <button class="btn green" onclick="mtAdDownload()">🖼️ تنزيل كصورة</button>
+        <button class="btn gold" onclick="mtAdUpload(this)">☁️ حفظ في الشيت</button>
+      </div>
+      <div id="mtAdMsg" class="team-form-msg"></div>
     </div>
   </div>
 </div>
@@ -6168,8 +6241,784 @@ async function saveTacticImage(btn) {
   }
 }
 
+/* ============================================================
+   المباريات
+   ============================================================ */
+const MATCH_API = "https://script.google.com/macros/s/AKfycbwrF3eDj8yjLt9Z6CWOfCDEckTbmWtUzmosUetxukpqhMgxgXyCLyCTy2uD-USPkWmwDg/exec";
+const MT_KINDS = ['ودية','دوري','كأس','خيرية','دورة ودية','دوري الهواة'];
+const MT_IMG_FIELDS = ['MatchTeamPhoto','MatchTeamVPhoto','MatchTeamVeiw','MatchTeamVVeiw','MatchPlan'];
+
+let mtCache = [], mtLoaded = false, mtAdding = false, mtEditingId = null, mtSearch = '';
+let mtOpen = new Set(), mtDraft = null, mtPhotos = {}, mtPhotoTarget = '';
+let mtAdCanvas = null, mtAdMatch = null;
+
+const mtParse = s => { try { const a = JSON.parse(s); return Array.isArray(a) ? a : []; } catch (e) { return []; } };
+const mtSum = arr => arr.reduce((a, e) => a + (parseInt(e.n, 10) || 0), 0);
+const mtTime = t => /^\d{1,2}:\d{2}$/.test(String(t || '').trim()) ? to12(String(t).trim()) : (t || '-');
+
+function mtFillPlayersDl() {
+  document.getElementById('mtPlayersDl').innerHTML =
+    plyListCache.map(p => `<option value="${escAttr(p.PLYName)}">`).join('');
+}
+
+/* ===== فتح/إغلاق ===== */
+function openMatchList() {
+  document.getElementById('matchListModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  ensurePlayersLoaded().then(mtFillPlayersDl);
+  if (!mtLoaded) loadMatchList(); else renderMatchList();
+}
+function closeMatchList() {
+  document.getElementById('matchListModal').classList.remove('active');
+  mtCancel();
+}
+document.getElementById('matchListModal').addEventListener('click', function (e) {
+  if (e.target === this) closeMatchList();
+});
+
+async function loadMatchList() {
+  const box = document.getElementById('mtListBox');
+  mtEditingId = null;
+  box.innerHTML = '<div class="spinner" style="margin:20px auto"></div>';
+  try {
+    const data = await fetchJSON(MATCH_API + '?action=list&t=' + Date.now());
+    if (!data.success) { box.innerHTML = `<div class="error-msg">${escAttr(data.message)}</div>`; return; }
+    mtCache = data.rows || [];
+    mtLoaded = true;
+    renderMatchList();
+  } catch (e) {
+    box.innerHTML = `<div class="error-msg">خطأ: ${escAttr(e.message)}</div>`;
+  }
+}
+
+/* ===== مسودة الأهداف والكروت ===== */
+function mtDraftFrom(r) {
+  r = r || {};
+  const t = getTeamInfoForCard();
+  return {
+    team: r.MatchTeam || t.TeamName || '', teamV: r.MatchTeamV || '',
+    gl: mtParse(r.MatchTeamGoalers),  vgl: mtParse(r.MatchTeamVGoalers),
+    cd: mtParse(r.MatchTeamCards),    vcd: mtParse(r.MatchTeamVCards),
+    g: r.MatchTeamGoals ?? '', vg: r.MatchTeamVGoals ?? ''
+  };
+}
+
+function mtImgVal(r, f) {
+  return mtPhotos[f] || (r && r[f]) ||
+    (f === 'MatchTeamPhoto' ? (getTeamInfoForCard().TeamLogo || '') : '');
+}
+
+function mtThumb(field, url, editable) {
+  const id = 'mtth_' + field;
+  if (editable) {
+    return url
+      ? `<img id="${id}" class="mt-logo editable" src="${escAttr(url)}" onclick="mtPickPhoto('${field}')" title="اضغط للتغيير" alt="">`
+      : `<span id="${id}" class="mt-logo none editable" onclick="mtPickPhoto('${field}')" title="اضغط لإضافة صورة">📷</span>`;
+  }
+  return url
+    ? `<img class="mt-logo" src="${escAttr(url)}" onclick="window.open(this.src,'_blank')" alt="">`
+    : '<span class="mt-logo none">—</span>';
+}
+
+/* ===== رفع/تصغير الصور ===== */
+function mtPickPhoto(f) { mtPhotoTarget = f; document.getElementById('mtPhotoInput').click(); }
+
+const MT_MAX_CHARS = 45000;
+
+/* تصغير الصورة حتى يتسع Base64 في خلية الشيت */
+function mtResize(file, startSize, png, cb) {
+  const rd = new FileReader();
+  rd.onload = ev => {
+    const im = new Image();
+    im.onload = () => {
+      let size = startSize, q = 0.8, out = '';
+      for (let i = 0; i < 30; i++) {
+        const k = Math.min(1, size / Math.max(im.width, im.height));
+        const c = document.createElement('canvas');
+        c.width  = Math.max(1, Math.round(im.width * k));
+        c.height = Math.max(1, Math.round(im.height * k));
+        const x = c.getContext('2d');
+        if (!png) { x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); }
+        x.drawImage(im, 0, 0, c.width, c.height);
+        out = png ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', q);
+        if (out.length <= MT_MAX_CHARS) break;
+        if (!png && q > 0.45) q -= 0.1; else size = Math.round(size * 0.85);
+      }
+      if (out.length > MT_MAX_CHARS) { alert('تعذّر تصغير الصورة بما يكفي، اختر صورة أخرى'); return; }
+      cb(out);
+    };
+    im.onerror = () => alert('ملف الصورة غير صالح');
+    im.src = ev.target.result;
+  };
+  rd.readAsDataURL(file);
+}
+
+function mtOnPhoto(e) {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  const f = mtPhotoTarget;
+  const logo = (f === 'MatchTeamPhoto' || f === 'MatchTeamVPhoto');
+  // الشعار PNG (يحافظ على الشفافية)، والباقي JPEG
+  mtResize(file, logo ? 220 : 600, logo, out => {
+    mtPhotos[f] = out;
+    const el = document.getElementById('mtth_' + f);
+    if (el) el.outerHTML = `<img id="mtth_${f}" class="mt-logo editable" src="${out}" onclick="mtPickPhoto('${f}')" alt="">`;
+  });
+}
+
+/* ===== محرر الأهداف والكروت (أسفل الصف) ===== */
+function mtSideEdit(v) {
+  const GK = v ? 'vgl' : 'gl', CK = v ? 'vcd' : 'cd', TK = v ? 'vg' : 'g';
+  const dl = v ? '' : 'list="mtPlayersDl"';
+
+  const goals = mtDraft[GK].map((e, i) => `
+    <div class="mt-ent">
+      <input ${dl} placeholder="اللاعب" value="${escAttr(e.name)}" oninput="mtEnt('${GK}',${i},'name',this.value)">
+      <input type="number" min="1" placeholder="أهداف" value="${escAttr(e.n)}" oninput="mtEnt('${GK}',${i},'n',this.value)">
+      <input placeholder="الدقيقة" value="${escAttr(e.min)}" oninput="mtEnt('${GK}',${i},'min',this.value)">
+      <button class="btn small red" onclick="mtDel('${GK}',${i})">✖</button>
+    </div>`).join('');
+
+  const cards = mtDraft[CK].map((e, i) => `
+    <div class="mt-ent card">
+      <input ${dl} placeholder="اللاعب" value="${escAttr(e.name)}" oninput="mtEnt('${CK}',${i},'name',this.value)">
+      <select onchange="mtEnt('${CK}',${i},'type',this.value)">
+        <option value="صفراء" ${e.type !== 'حمراء' ? 'selected' : ''}>🟨 صفراء</option>
+        <option value="حمراء" ${e.type === 'حمراء' ? 'selected' : ''}>🟥 حمراء</option>
+      </select>
+      <input type="number" min="1" placeholder="العدد" value="${escAttr(e.n)}" oninput="mtEnt('${CK}',${i},'n',this.value)">
+      <input placeholder="الدقيقة" value="${escAttr(e.min)}" oninput="mtEnt('${CK}',${i},'min',this.value)">
+      <button class="btn small red" onclick="mtDel('${CK}',${i})">✖</button>
+    </div>`).join('');
+
+  return `<div class="mt-side">
+    <h4 id="mtSideTitle_${v ? 'v' : 'o'}">${v ? '🆚' : '⚽'} ${escAttr(v ? mtDraft.teamV : mtDraft.team) || (v ? 'الخصم' : 'الفريق')}</h4>
+    <div class="mt-sub">⚽ الأهداف (اللاعب - العدد - الدقيقة)</div>${goals}
+    <button class="btn small gold" onclick="mtAdd('${GK}')">➕ هدف</button>
+    <div class="mt-sub">🟨🟥 الكروت (اللاعب - النوع - العدد - الدقيقة)</div>${cards}
+    <button class="btn small gold" onclick="mtAdd('${CK}')">➕ كرت</button>
+    <div class="mt-total"><label>إجمالي الأهداف</label>
+      <input type="number" min="0" id="mtTot_${TK}" value="${escAttr(mtDraft[TK])}" oninput="mtDraft.${TK}=this.value"></div>
+  </div>`;
+}
+
+function mtDetailEditHtml() {
+  return `<div class="mt-sides">${mtSideEdit(false)}${mtSideEdit(true)}</div>`;
+}
+function mtRerenderDetail() {
+  const c = document.getElementById('mtDetailCell');
+  if (c) c.innerHTML = mtDetailEditHtml();
+}
+function mtTitle() {
+  const o = document.getElementById('mtSideTitle_o'), v = document.getElementById('mtSideTitle_v');
+  if (o) o.textContent = '⚽ ' + (mtDraft.team || 'الفريق');
+  if (v) v.textContent = '🆚 ' + (mtDraft.teamV || 'الخصم');
+}
+function mtTotalKey(k) { return (k === 'gl') ? 'g' : (k === 'vgl') ? 'vg' : null; }
+function mtSyncTotal(k) {
+  const tk = mtTotalKey(k);
+  if (!tk) return;
+  mtDraft[tk] = mtSum(mtDraft[k]);
+  const el = document.getElementById('mtTot_' + tk);
+  if (el) el.value = mtDraft[tk];
+}
+function mtEnt(k, i, f, val) {
+  mtDraft[k][i][f] = val;
+  if (f === 'n') mtSyncTotal(k);
+}
+function mtAdd(k) {
+  const isCard = (k === 'cd' || k === 'vcd');
+  mtDraft[k].push(isCard ? { name: '', type: 'صفراء', n: 1, min: '' } : { name: '', n: 1, min: '' });
+  mtSyncTotal(k);
+  mtRerenderDetail();
+}
+function mtDel(k, i) {
+  mtDraft[k].splice(i, 1);
+  mtSyncTotal(k);
+  mtRerenderDetail();
+}
+
+/* ===== عرض التفاصيل (للقراءة) ===== */
+function mtLines(arr, card) {
+  if (!arr.length) return '<div class="mt-view-line" style="color:#999">—</div>';
+  return arr.map(e => `<div class="mt-view-line">${card ? (e.type === 'حمراء' ? '🟥' : '🟨') : '⚽'}
+    ${escAttr(e.name || '-')} ×${escAttr(e.n || 1)}${e.min ? ` <small>(${escAttr(e.min)}')</small>` : ''}</div>`).join('');
+}
+function mtDetailView(r) {
+  const g  = r.MatchTeamGoals  !== '' ? r.MatchTeamGoals  : mtSum(mtParse(r.MatchTeamGoalers));
+  const vg = r.MatchTeamVGoals !== '' ? r.MatchTeamVGoals : mtSum(mtParse(r.MatchTeamVGoalers));
+  const side = (title, gl, cd, tot) => `<div class="mt-side"><h4>${escAttr(title)}</h4>
+    <div class="mt-sub">⚽ الأهداف</div>${mtLines(mtParse(gl), false)}
+    <div class="mt-sub">🟨🟥 الكروت</div>${mtLines(mtParse(cd), true)}
+    <div class="mt-total"><label>إجمالي الأهداف</label><strong>${escAttr(tot)}</strong></div></div>`;
+  return `<div class="mt-sides">
+    ${side(r.MatchTeam, r.MatchTeamGoalers, r.MatchTeamCards, g)}
+    ${side(r.MatchTeamV, r.MatchTeamVGoalers, r.MatchTeamVCards, vg)}</div>`;
+}
+
+/* ===== صف الإدخال/التعديل ===== */
+function mtKindOpts(cur) {
+  return '<option value="">— اختر —</option>' +
+    MT_KINDS.map(k => `<option value="${k}" ${k === cur ? 'selected' : ''}>${k}</option>`).join('');
+}
+
+function mtRowEdit(r, id) {
+  r = r || {};
+  const sid = escAttr(id);
+  const d = mtDraft;
+  return `<tr class="input-row">
+    <td><strong>${id ? sid : 'جديد'}</strong></td>
+    <td><select id="mt_kind">${mtKindOpts(r.MatchKind)}</select></td>
+    <td><input type="date" id="mt_date" value="${normalizeDate(r.MatchDate) || toDateStr(new Date())}"></td>
+    <td><input type="time" id="mt_time" value="${to24Input(r.MatchTime) || ''}"></td>
+    <td>${mtThumb('MatchTeamPhoto', mtImgVal(r, 'MatchTeamPhoto'), true)}<br>
+        <input type="text" id="mt_team" value="${escAttr(d.team)}" placeholder="الفريق"
+               oninput="mtDraft.team=this.value;mtTitle()"></td>
+    <td>${mtThumb('MatchTeamVPhoto', mtImgVal(r, 'MatchTeamVPhoto'), true)}<br>
+        <input type="text" id="mt_teamv" value="${escAttr(d.teamV)}" placeholder="الفريق الخصم"
+               oninput="mtDraft.teamV=this.value;mtTitle()"></td>
+                   <td><input type="text" id="mt_loc" value="${escAttr(r.MatchLocation)}" placeholder="موقع المباراة"></td>
+    <td><div class="mt-photos">
+        <div>${mtThumb('MatchTeamVeiw', mtImgVal(r, 'MatchTeamVeiw'), true)}<small>جماعية الفريق</small></div>
+        <div>${mtThumb('MatchTeamVVeiw', mtImgVal(r, 'MatchTeamVVeiw'), true)}<small>جماعية الخصم</small></div>
+        <div>${mtThumb('MatchPlan', mtImgVal(r, 'MatchPlan'), true)}<small>الخطة</small></div>
+    </div></td>
+    <td>—</td>
+    <td style="white-space:nowrap">
+      <button class="btn small green" onclick="mtSave('${sid}', this)">💾</button>
+      <button class="btn small red" onclick="mtCancel()">✖</button>
+    </td></tr>
+    <tr class="mt-detail"><td colspan="10" id="mtDetailCell">${mtDetailEditHtml()}</td></tr>`;
+}
+
+/* ===== رسم الجدول ===== */
+function renderMatchList() {
+  const box = document.getElementById('mtListBox');
+  let rows = mtCache;
+  const q = mtSearch.trim().toLowerCase();
+  if (q) {
+    rows = rows.filter(r =>
+      String(r.MatchTeam  || '').toLowerCase().includes(q) ||
+      String(r.MatchTeamV || '').toLowerCase().includes(q) ||
+      String(r.MatchKind  || '').toLowerCase().includes(q) ||
+      String(r.MatchID    || '').toLowerCase().includes(q));
+  }
+  document.getElementById('mtCount').textContent = `النتائج: ${rows.length} من ${mtCache.length}`;
+
+  if (!rows.length && !mtAdding) {
+    box.innerHTML = '<div class="bookings-empty">لا توجد مباريات</div>';
+    return;
+  }
+
+  rows = [...rows].sort((a, b) => {
+    const da = normalizeDate(a.MatchDate) || '', db = normalizeDate(b.MatchDate) || '';
+    if (da !== db) return db.localeCompare(da);
+    return (to24(b.MatchTime) || '').localeCompare(to24(a.MatchTime) || '');
+  });
+
+  let html = `<div style="overflow-x:auto;"><table class="bookings-table users-table mt-table">
+    <thead><tr>
+      <th>رقم المباراة</th><th>النوع</th><th>التاريخ</th><th>الوقت</th>
+      <th>الفريق</th><th>الخصم</th><th>الموقع</th><th>الصور</th><th>النتيجة</th><th>إجراءات</th>
+    </tr></thead><tbody>`;
+
+  if (mtAdding) html += mtRowEdit(null, '');
+
+  rows.forEach(r => {
+    const id = r.MatchID, sid = escAttr(id);
+
+    if (mtEditingId === id) { html += mtRowEdit(r, id); return; }
+
+    const g  = r.MatchTeamGoals  !== '' ? r.MatchTeamGoals  : mtSum(mtParse(r.MatchTeamGoalers));
+    const vg = r.MatchTeamVGoals !== '' ? r.MatchTeamVGoals : mtSum(mtParse(r.MatchTeamVGoalers));
+    const hasScore = r.MatchTeamGoals !== '' || r.MatchTeamVGoals !== '' ||
+                     mtParse(r.MatchTeamGoalers).length || mtParse(r.MatchTeamVGoalers).length;
+    const d = normalizeDate(r.MatchDate);
+
+    html += `<tr data-matchid="${sid}">
+      <td><strong>${sid}</strong></td>
+      <td>${escAttr(r.MatchKind) || '-'}</td>
+      <td>${d ? fmtDMY(d) : '-'}</td>
+      <td>${escAttr(mtTime(r.MatchTime))}</td>
+      <td>${mtThumb('x1', r.MatchTeamPhoto || getTeamInfoForCard().TeamLogo, false)}<br>${escAttr(r.MatchTeam) || '-'}</td>
+      <td>${mtThumb('x2', r.MatchTeamVPhoto, false)}<br>${escAttr(r.MatchTeamV) || '-'}</td>
+      <td>${escAttr(r.MatchLocation) || '-'}</td>
+      <td><div class="mt-photos">
+        <div>${mtThumb('x3', r.MatchTeamVeiw, false)}<small>جماعية الفريق</small></div>
+        <div>${mtThumb('x4', r.MatchTeamVVeiw, false)}<small>جماعية الخصم</small></div>
+        <div>${mtThumb('x5', r.MatchPlan, false)}<small>الخطة</small></div>
+      </div></td>
+      <td><strong style="font-size:15px;direction:ltr;display:inline-block">${hasScore ? `${escAttr(g)} - ${escAttr(vg)}` : '-'}</strong></td>
+      <td style="white-space:nowrap">
+        <button class="btn small goldEdit" onclick="mtStartEdit('${sid}')" title="تعديل">✏️</button>
+        <button class="btn small" onclick="mtToggle('${sid}')" title="">📋</button>
+        <button class="btn small gold" onclick="openMatchAd('${sid}')" title="إعلان المباراة">📢</button>
+        <button class="btn small red" onclick="mtDelete('${sid}', this)">🗑</button>
+      </td></tr>`;
+
+    if (mtOpen.has(id)) {
+      html += `<tr class="mt-detail"><td colspan="9">${mtDetailView(r)}</td></tr>`;
+    }
+  });
+
+  html += '</tbody></table></div>';
+  box.innerHTML = html;
+}
+
+function mtToggle(id) {
+  if (mtOpen.has(id)) mtOpen.delete(id); else mtOpen.add(id);
+  renderMatchList();
+}
+
+/* ===== إضافة / تعديل / إلغاء ===== */
+function mtSetAddMode(on) {
+  mtAdding = on;
+  const b = document.getElementById('mtAddBtn');
+  b.textContent = on ? '✖ إغلاق' : '➕ إضافة مباراة';
+  b.classList.toggle('red', on);
+  b.classList.toggle('green', !on);
+}
+function mtStartAdd() {
+  if (mtAdding) { mtCancel(); return; }
+  mtEditingId = null; mtPhotos = {};
+  mtDraft = mtDraftFrom(null);
+  mtSetAddMode(true);
+  renderMatchList();
+}
+function mtStartEdit(id) {
+  const r = mtCache.find(x => String(x.MatchID) === String(id));
+  if (!r) return;
+  mtSetAddMode(false);
+  mtPhotos = {};
+  mtDraft = mtDraftFrom(r);
+  mtEditingId = id;
+  renderMatchList();
+}
+function mtCancel() {
+  mtEditingId = null; mtPhotos = {}; mtDraft = null;
+  mtSetAddMode(false);
+  if (document.getElementById('matchListModal').classList.contains('active')) renderMatchList();
+}
 
 
+async function mtSave(id, btn) {
+  const v = i => document.getElementById(i).value.trim();
+  const kind = v('mt_kind'), date = v('mt_date'), time = v('mt_time');
+  const team = v('mt_team'), teamV = v('mt_teamv');
+
+  if (!kind || !date || !team || !teamV) {
+    alert('الرجاء ملء: نوع المباراة، التاريخ، اسم الفريق، اسم الفريق الخصم');
+    return;
+  }
+  if (btn.dataset.busy === '1') return;
+  btn.dataset.busy = '1'; btn.classList.add('loading'); btn.disabled = true;
+
+  try {
+    const old = id ? mtCache.find(x => String(x.MatchID) === String(id)) : null;
+    const clean = arr => arr.filter(e => String(e.name || '').trim());
+    const d = mtDraft;
+
+    const payload = {
+      action: 'save', MatchID: id || '',
+      MatchKind: kind, MatchDate: date, MatchTime: time,
+       MatchTeam: team, MatchTeamV: teamV,
+      MatchLocation: v('mt_loc'),
+      MatchTeamGoalers:  JSON.stringify(clean(d.gl)),
+      MatchTeamVGoalers: JSON.stringify(clean(d.vgl)),
+      MatchTeamCards:    JSON.stringify(clean(d.cd)),
+      MatchTeamVCards:   JSON.stringify(clean(d.vcd)),
+      MatchTeamGoals:  String(d.g  === '' ? mtSum(d.gl)  : (parseInt(d.g, 10)  || 0)),
+      MatchTeamVGoals: String(d.vg === '' ? mtSum(d.vgl) : (parseInt(d.vg, 10) || 0))
+    };
+
+      for (const f of MT_IMG_FIELDS) {
+      const isLogo = (f === 'MatchTeamPhoto' || f === 'MatchTeamVPhoto');
+      let val = mtImgVal(old, f);
+      if (val && !/^data:/.test(val)) {
+        btn.title = 'جارٍ تحويل الصور...';
+        val = await mtToBase64(val, isLogo ? 220 : 600, isLogo);   // شعار الفريق التلقائي والروابط القديمة
+      }
+      payload[f] = val;
+    }
+
+    const res = await fetch(MATCH_API, { method: 'POST', body: JSON.stringify(payload) });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message);
+
+    const row = Object.assign({}, old || {}, payload, { MatchID: data.MatchID });
+    delete row.action;
+    if (old) Object.assign(old, row); else mtCache.push(row);
+
+    mtEditingId = null; mtPhotos = {}; mtDraft = null;
+    mtSetAddMode(false);
+    renderMatchList();
+  } catch (e) {
+    alert('خطأ: ' + e.message);
+    btn.classList.remove('loading'); btn.disabled = false; btn.dataset.busy = '0';
+  }
+}
+
+async function mtDelete(id, btn) {
+  if (!confirm('هل أنت متأكد من حذف هذه المباراة؟')) return;
+  if (btn.dataset.busy === '1') return;
+  btn.dataset.busy = '1'; btn.classList.add('loading'); btn.disabled = true;
+  try {
+    const res = await fetch(MATCH_API, { method: 'POST', body: JSON.stringify({ action: 'delete', MatchID: id }) });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message);
+    mtCache = mtCache.filter(x => String(x.MatchID) !== String(id));
+    mtOpen.delete(id);
+    renderMatchList();
+  } catch (e) {
+    alert('خطأ: ' + e.message);
+    btn.classList.remove('loading'); btn.disabled = false; btn.dataset.busy = '0';
+  }
+}
+
+/* ============================================================
+   إعلان المباراة
+   ============================================================ */
+function mtPlayerSummary(goals, cards) {
+  const m = {};
+  const get = n => (m[n] = m[n] || { g: 0, y: 0, r: 0 });
+  goals.forEach(e => { if (e.name) get(e.name).g += parseInt(e.n, 10) || 1; });
+  cards.forEach(e => {
+    if (!e.name) return;
+    const o = get(e.name), n = parseInt(e.n, 10) || 1;
+    if (e.type === 'حمراء') o.r += n; else o.y += n;
+  });
+  return Object.entries(m).map(([name, o]) => ({ name, ...o }));
+}
+
+async function mtBuildAd(r) {
+  if (document.fonts && document.fonts.ready) await document.fonts.ready;
+
+  const loadAny = async (u, size, png) => {
+    try { return await tcLoadImg(await mtToBase64(u, size, png), false); }
+    catch (e) { console.warn('فشل تحميل صورة الإعلان:', e); return null; }
+  };
+  const [lg1, lg2, v1, v2] = await Promise.all([
+    loadAny(r.MatchTeamPhoto || getTeamInfoForCard().TeamLogo, 220, true),
+    loadAny(r.MatchTeamVPhoto, 220, true),
+    loadAny(r.MatchTeamVeiw, 600, false),
+    loadAny(r.MatchTeamVVeiw, 600, false)
+  ]);
+
+  const gl = mtParse(r.MatchTeamGoalers),  vgl = mtParse(r.MatchTeamVGoalers);
+  const s1 = mtPlayerSummary(gl,  mtParse(r.MatchTeamCards));
+  const s2 = mtPlayerSummary(vgl, mtParse(r.MatchTeamVCards));
+  const g  = r.MatchTeamGoals  !== '' ? parseInt(r.MatchTeamGoals, 10)  || 0 : mtSum(gl);
+  const vg = r.MatchTeamVGoals !== '' ? parseInt(r.MatchTeamVGoals, 10) || 0 : mtSum(vgl);
+  const played = (g + vg > 0) || gl.length || vgl.length;
+
+  const rows = Math.max(s1.length, s2.length);
+  const W = 900, headH = 140;
+  const yName = 195, yPh = 235, phW = 240, phH = 400;
+  const yL = yPh + phH + 35;
+  const listH = rows ? 80 + rows * 46 : 0;
+  const H = yL + listH + 40;
+
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+  ctx.direction = 'rtl'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, '#0f2027'); bg.addColorStop(1, '#2c5364');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#1e3c72'; ctx.fillRect(0, 0, W, headH);
+
+  const fit = (text, maxW, size, weight = 700) => {
+    ctx.font = `${weight} ${size}px Cairo, Tahoma, sans-serif`;
+    while (size > 14 && ctx.measureText(text).width > maxW) {
+      size -= 2; ctx.font = `${weight} ${size}px Cairo, Tahoma, sans-serif`;
+    }
+  };
+  const cover = (im, x, y, w, h) => {
+    const sc = Math.max(w / im.width, h / im.height);
+    const dw = im.width * sc, dh = im.height * sc;
+    ctx.save();
+    ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+    ctx.drawImage(im, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+    ctx.restore();
+  };
+
+  /* ترسم الشعار ثم تحوّل البيضاء المحيطة إلى شفافة */
+  const containClean = (im, cx, cy, box) => {
+    const sc = Math.min(box / im.width, box / im.height);
+    const w = Math.max(1, Math.round(im.width * sc));
+    const h = Math.max(1, Math.round(im.height * sc));
+    const t = document.createElement('canvas');
+    t.width = w; t.height = h;
+    const x = t.getContext('2d');
+    x.drawImage(im, 0, 0, w, h);
+    try {
+      const d = x.getImageData(0, 0, w, h), p = d.data;
+      for (let i = 0; i < p.length; i += 4) {
+        const m = Math.min(p[i], p[i + 1], p[i + 2]);
+        if (m > 245) p[i + 3] = 0;
+        else if (m > 225) p[i + 3] = Math.round(p[i + 3] * (245 - m) / 20);
+      }
+      x.putImageData(d, 0, 0);
+    } catch (e) {}
+    ctx.drawImage(t, cx - w / 2, cy - h / 2);
+  };
+
+  /* صورة جماعية بدون إطار أو خلفية: تُزال الخلفية البيضاء المتصلة بالحواف فقط */
+  const cutout = (im, x, y, w, h) => {
+    const sc = Math.min(w / im.width, h / im.height);
+    const tw = Math.max(1, Math.round(im.width * sc));
+    const th = Math.max(1, Math.round(im.height * sc));
+    const t = document.createElement('canvas');
+    t.width = tw; t.height = th;
+    const tx = t.getContext('2d');
+    tx.drawImage(im, 0, 0, tw, th);
+    try {
+      const d = tx.getImageData(0, 0, tw, th), p = d.data;
+      const seen = new Uint8Array(tw * th);
+      const isBg = i => p[i + 3] < 10 || Math.min(p[i], p[i + 1], p[i + 2]) > 230;
+      const stack = [];
+      const push = (px, py) => {
+        if (px < 0 || py < 0 || px >= tw || py >= th) return;
+        const k = py * tw + px;
+        if (seen[k] || !isBg(k * 4)) return;
+        seen[k] = 1; stack.push(k);
+      };
+      for (let i = 0; i < tw; i++) { push(i, 0); push(i, th - 1); }
+      for (let j = 0; j < th; j++) { push(0, j); push(tw - 1, j); }
+      while (stack.length) {
+        const k = stack.pop();
+        p[k * 4 + 3] = 0;
+        const px = k % tw, py = (k - px) / tw;
+        push(px + 1, py); push(px - 1, py); push(px, py + 1); push(px, py - 1);
+      }
+      tx.putImageData(d, 0, 0);
+    } catch (e) {}
+    // الصورة تلامس أسفل المنطقة وتتوسط أفقياً
+    ctx.drawImage(t, x + (w - tw) / 2, y + h - th);
+  };
+
+  /* الترويسة: نوع المباراة فقط */
+  ctx.fillStyle = '#f0b90b';
+  const kindTxt = 'مباراة ' + (r.MatchKind || '');
+  fit(kindTxt, W - 60, 54);
+  ctx.fillText(kindTxt, W / 2, headH / 2);
+
+  /* الصور الجماعية على الأطراف (بدون إطار): الفريق يساراً والخصم يميناً */
+  const x1 = 25, x2 = W - 25 - phW;
+  if (v1) cutout(v1, x1, yPh, phW, phH);
+  if (v2) cutout(v2, x2, yPh, phW, phH);
+
+  /* اسم كل فريق فوق صورته */
+  const nameAt = (txt, cx) => {
+    fit(txt, 420, 36);
+    const half = ctx.measureText(txt).width / 2;
+    const x = Math.min(W - half - 15, Math.max(half + 15, cx));
+    ctx.fillStyle = '#fff';
+    ctx.fillText(txt, x, yName);
+  };
+  nameAt(r.MatchTeam || '',  x1 + phW / 2);
+  nameAt(r.MatchTeamV || '', x2 + phW / 2);
+
+  /* الوسط: VS أو النتيجة */
+  ctx.fillStyle = '#f0b90b';
+  ctx.font = '700 70px Cairo, Tahoma, sans-serif';
+  ctx.direction = 'ltr';
+  ctx.fillText(played ? `${g} - ${vg}` : 'VS', W / 2, yPh + 45);
+  ctx.direction = 'rtl';
+
+  /* الشعاران المصغّران (بدون إطار) */
+  const lgY = yPh + 125;
+  if (lg1) containClean(lg1, W / 2 - 100, lgY, 110);
+  if (lg2) containClean(lg2, W / 2 + 100, lgY, 110);
+
+  /* بطاقة معلومات: شريط أبيض + لوحة صفراء بأيقونة على اليمين */
+  const infoCard = (text, icon, cx, cy) => {
+    const w = 330, h = 62, x = cx - w / 2, y = cy - h / 2;
+    const tab = 62, sk = 14;
+
+    const g1 = ctx.createLinearGradient(0, y, 0, y + h);
+    g1.addColorStop(0, '#ffffff'); g1.addColorStop(1, '#dfe3ea');
+    ctx.fillStyle = g1;
+    tcRoundRect(ctx, x, y, w, h, 10);
+    ctx.fill();
+
+    ctx.save();
+    tcRoundRect(ctx, x, y, w, h, 10);
+    ctx.clip();
+    const g2 = ctx.createLinearGradient(0, y, 0, y + h);
+    g2.addColorStop(0, '#ffe55c'); g2.addColorStop(1, '#f0b90b');
+    ctx.fillStyle = g2;
+    ctx.beginPath();
+    ctx.moveTo(x + w, y);
+    ctx.lineTo(x + w - tab, y);
+    ctx.lineTo(x + w - tab - sk, y + h);
+    ctx.lineTo(x + w, y + h);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+    ctx.strokeStyle = 'rgba(80,40,140,.55)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x + 8, y + h + 1);
+    ctx.lineTo(x + w - 8, y + h + 1);
+    ctx.stroke();
+
+    ctx.fillStyle = '#1b1b1b';
+    ctx.font = '30px sans-serif';
+    ctx.fillText(icon, x + w - tab / 2 - 4, cy + 2);
+
+    const maxW = w - tab - sk - 24;
+    fit(text, maxW, 26, 700);
+    ctx.fillStyle = '#1b1b1b';
+    ctx.fillText(text, x + (w - tab - sk) / 2, cy + 1);
+  };
+
+  const ds = normalizeDate(r.MatchDate);
+  const dayName = ds ? DAYS_AR[new Date(ds + 'T00:00:00').getDay()] : '';
+  const dateTxt = `${dayName} ${ds ? fmtDMY(ds) : ''}`.trim();
+  const timeTxt = mtTime(r.MatchTime);
+  const locTxt  = String(r.MatchLocation || '').trim();
+
+  let cardY = yPh + 235;
+  infoCard(dateTxt, '📅', W / 2, cardY);
+  cardY += 82;
+  infoCard('الساعة ' + timeTxt, '⏰', W / 2, cardY);
+  if (locTxt) {
+    cardY += 82;
+    infoCard(locTxt, '📍', W / 2, cardY);
+  }
+
+  /* المسجلون والكروت */
+  if (rows) {
+    ctx.fillStyle = '#f0b90b';
+    ctx.font = '700 34px Cairo, Tahoma, sans-serif';
+    ctx.fillText('الأهداف والكروت', W / 2, yL + 30);
+    ctx.strokeStyle = 'rgba(255,255,255,.3)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(W / 2, yL + 65); ctx.lineTo(W / 2, yL + 65 + rows * 46); ctx.stroke();
+
+    const line = o => `${tcShortName(o.name)}  ${o.g ? '⚽' + o.g : ''} ${o.y ? '🟨' + o.y : ''} ${o.r ? '🟥' + o.r : ''}`.trim();
+    [[s1, 225], [s2, 675]].forEach(([list, cx]) => {
+      list.forEach((o, i) => {
+        const t = line(o);
+        ctx.fillStyle = '#fff';
+        fit(t, 400, 28, 600);
+        ctx.fillText(t, cx, yL + 90 + i * 46);
+      });
+    });
+  }
+  return cv;
+}
+
+async function openMatchAd(id) {
+  const r = mtCache.find(x => String(x.MatchID) === String(id));
+  if (!r) return;
+  mtAdMatch = r; mtAdCanvas = null;
+  document.getElementById('mtAdMsg').innerHTML = '';
+  const box = document.getElementById('matchAdBox');
+  box.innerHTML = '<div class="spinner" style="margin:30px auto"></div>';
+  document.getElementById('matchAdModal').classList.add('active');
+  try {
+    mtAdCanvas = await mtBuildAd(r);
+    box.innerHTML = '';
+    box.appendChild(mtAdCanvas);
+  } catch (e) {
+    box.innerHTML = `<div class="error-msg">تعذّر إنشاء الإعلان: ${escAttr(e.message)}</div>`;
+  }
+}
+function closeMatchAd() { document.getElementById('matchAdModal').classList.remove('active'); }
+document.getElementById('matchAdModal').addEventListener('click', function (e) {
+  if (e.target === this) closeMatchAd();
+});
+
+function mtAdDownload() {
+  if (!mtAdCanvas) return;
+  mtAdCanvas.toBlob(blob => {
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'اعلان-' + mtAdMatch.MatchID + '.png';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }, 'image/png');
+}
+
+function mtCanvasFit(cv) {
+  let w = Math.min(cv.width, 700), q = 0.7, out = '';
+  for (let i = 0; i < 30; i++) {
+    const c = document.createElement('canvas');
+    c.width = w; c.height = Math.round(cv.height * w / cv.width);
+    c.getContext('2d').drawImage(cv, 0, 0, c.width, c.height);
+    out = c.toDataURL('image/jpeg', q);
+    if (out.length <= MT_MAX_CHARS) return out;
+    if (q > 0.4) q -= 0.1; else w = Math.round(w * 0.85);
+  }
+  return '';
+}
+
+async function mtAdUpload(btn) {
+  if (!mtAdCanvas || !mtAdMatch) return;
+  const msg = document.getElementById('mtAdMsg');
+  btn.disabled = true; btn.classList.add('loading'); msg.innerHTML = '';
+  try {
+    const url = mtCanvasFit(mtAdCanvas);
+    if (!url) throw new Error('الإعلان كبير جداً لحفظه في خلية الشيت');
+    const res = await fetch(MATCH_API, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'save', MatchID: mtAdMatch.MatchID, MatchAds: url })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message);
+    mtAdMatch.MatchAds = url;
+    msg.innerHTML = '<div class="success-msg">✅ تم حفظ الإعلان في الشيت (بجودة مصغّرة)</div>';
+  } catch (e) {
+    msg.innerHTML = `<div class="error-msg">خطأ: ${escAttr(e.message)}</div>`;
+  } finally {
+    btn.disabled = false; btn.classList.remove('loading');
+  }
+}
+/* تصغير صورة (data URL) حتى تتسع في الخلية */
+function mtShrink(src, startSize, png) {
+  return new Promise((resolve, reject) => {
+    const im = new Image();
+    im.onload = () => {
+      let size = startSize, q = 0.8, out = '';
+      for (let i = 0; i < 30; i++) {
+        const k = Math.min(1, size / Math.max(im.width, im.height));
+        const c = document.createElement('canvas');
+        c.width  = Math.max(1, Math.round(im.width * k));
+        c.height = Math.max(1, Math.round(im.height * k));
+        const x = c.getContext('2d');
+        if (!png) { x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); }
+        x.drawImage(im, 0, 0, c.width, c.height);
+        out = png ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', q);
+        if (out.length <= MT_MAX_CHARS) return resolve(out);
+        if (!png && q > 0.45) q -= 0.1; else size = Math.round(size * 0.85);
+      }
+      reject(new Error('تعذّر تصغير الصورة بما يكفي'));
+    };
+    im.onerror = () => reject(new Error('الصورة غير صالحة'));
+    im.src = src;
+  });
+}
+
+/* أي رابط (Drive وغيره) → Base64 مصغّر عبر السكربت */
+const mtB64Cache = {};
+async function mtToBase64(url, startSize, png) {
+  if (!url) return '';
+  if (/^data:/.test(url)) return url;
+  if (mtB64Cache[url]) return mtB64Cache[url];
+  const d = await fetchJSON(MATCH_API, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'fetchImage', url })
+  });
+  if (!d || !d.success) throw new Error((d && d.message) || 'تعذّر جلب الصورة');
+  const out = await mtShrink(d.data, startSize, png);
+  mtB64Cache[url] = out;
+  return out;
+}
 
 
 
