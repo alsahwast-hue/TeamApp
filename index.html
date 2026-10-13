@@ -949,7 +949,7 @@ body.has-install-bar { padding-bottom: 80px; }
 .mt-view-line { font-size:13px; margin:3px 0; }
 #matchAdModal { z-index:2600; }
 #matchAdBox canvas { width:100%; height:auto; border-radius:12px; display:block; }
-
+.mt-logo { object-fit: contain; background: #fff; }
 
 </style>
 </head>
@@ -6353,18 +6353,207 @@ function mtResize(file, startSize, png, cb) {
   rd.readAsDataURL(file);
 }
 
-function mtOnPhoto(e) {
+const MT_NOBG_FIELDS = ['MatchTeamPhoto','MatchTeamVPhoto','MatchTeamVeiw','MatchTeamVVeiw'];
+
+function mtLoadFileImg(file) {
+  return new Promise((resolve, reject) => {
+    const rd = new FileReader();
+    rd.onload = ev => {
+      const im = new Image();
+      im.onload  = () => resolve(im);
+      im.onerror = () => reject(new Error('ملف الصورة غير صالح'));
+      im.src = ev.target.result;
+    };
+    rd.onerror = () => reject(new Error('تعذّر قراءة الملف'));
+    rd.readAsDataURL(file);
+  });
+}
+
+/* يرجع canvas بدون خلفية وبدون حدود (شفاف ومقصوص على الموضوع) */
+function mtCutBackground(img, work) {
+  const k = Math.min(1, work / Math.max(img.width, img.height));
+  let w = Math.max(1, Math.round(img.width * k));
+  let h = Math.max(1, Math.round(img.height * k));
+
+  let cv = document.createElement('canvas');
+  cv.width = w; cv.height = h;
+  let ctx = cv.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(img, 0, 0, w, h);
+
+  /* ---------- 1) قصّ الحدود: أي خط خارجي موحّد اللون (إطار/حد) ---------- */
+  let d = ctx.getImageData(0, 0, w, h).data;
+  const lineUniform = (pts) => {           // pts = قائمة فهارس البكسلات
+    let sr = 0, sg = 0, sb = 0, n = 0;
+    for (const i of pts) { if (d[i + 3] < 10) continue; sr += d[i]; sg += d[i+1]; sb += d[i+2]; n++; }
+    if (!n) return true;                   // خط شفاف بالكامل
+    const mr = sr / n, mg = sg / n, mb = sb / n;
+    for (const i of pts) {
+      if (d[i + 3] < 10) continue;
+      if (Math.abs(d[i]-mr) > 28 || Math.abs(d[i+1]-mg) > 28 || Math.abs(d[i+2]-mb) > 28) return false;
+    }
+    return true;
+  };
+  const rowPts = (y, x0, x1) => { const a = []; for (let x = x0; x < x1; x++) a.push((y * w + x) * 4); return a; };
+  const colPts = (x, y0, y1) => { const a = []; for (let y = y0; y < y1; y++) a.push((y * w + x) * 4); return a; };
+
+  const maxT = Math.max(2, Math.round(Math.min(w, h) * 0.06));
+  let L = 0, T = 0, R = w, B = h;
+  for (let i = 0; i < maxT && T < B - 4 && lineUniform(rowPts(T, L, R)); i++) T++;
+  for (let i = 0; i < maxT && B > T + 4 && lineUniform(rowPts(B - 1, L, R)); i++) B--;
+  for (let i = 0; i < maxT && L < R - 4 && lineUniform(colPts(L, T, B)); i++) L++;
+  for (let i = 0; i < maxT && R > L + 4 && lineUniform(colPts(R - 1, T, B)); i++) R--;
+  // هامش إضافي صغير لإزالة بقايا الحد
+  const m = Math.max(1, Math.round(Math.min(R - L, B - T) * 0.008));
+  L += m; T += m; R -= m; B -= m;
+  if (R - L < 8 || B - T < 8) { L = 0; T = 0; R = w; B = h; }
+
+  const c2 = document.createElement('canvas');
+  c2.width = R - L; c2.height = B - T;
+  c2.getContext('2d').drawImage(cv, L, T, R - L, B - T, 0, 0, R - L, B - T);
+  const trimmed = c2;
+  w = c2.width; h = c2.height;
+  ctx = c2.getContext('2d', { willReadFrequently: true });
+
+  /* ---------- 2) تقدير لون الخلفية من الحواف ---------- */
+  const id = ctx.getImageData(0, 0, w, h);
+  const p = id.data;
+  const buckets = new Map();
+  const edgeIdx = [];
+  for (let x = 0; x < w; x++) { edgeIdx.push(x, (h - 1) * w + x); }
+  for (let y = 0; y < h; y++) { edgeIdx.push(y * w, y * w + w - 1); }
+
+  edgeIdx.forEach(px => {
+    const i = px * 4;
+    if (p[i + 3] < 10) return;
+    const key = ((p[i] >> 4) << 8) | ((p[i+1] >> 4) << 4) | (p[i+2] >> 4);
+    const b = buckets.get(key) || { n: 0, r: 0, g: 0, b: 0 };
+    b.n++; b.r += p[i]; b.g += p[i+1]; b.b += p[i+2];
+    buckets.set(key, b);
+  });
+  let best = null;
+  buckets.forEach(b => { if (!best || b.n > best.n) best = b; });
+  const bg = best ? { r: best.r / best.n, g: best.g / best.n, b: best.b / best.n } : null;
+
+  const TOL = 42;
+  const dist = i => {
+    if (!bg) return 999;
+    const dr = p[i] - bg.r, dg = p[i+1] - bg.g, db = p[i+2] - bg.b;
+    return Math.sqrt(dr*dr + dg*dg + db*db);
+  };
+  const isBg = px => { const i = px * 4; return p[i + 3] < 10 || dist(i) < TOL; };
+
+  /* ---------- 3) تعبئة من الحواف (إزالة الخلفية المتصلة بالحواف فقط) ---------- */
+  const seen = new Uint8Array(w * h);
+  const stack = [];
+  const push = px => { if (!seen[px] && isBg(px)) { seen[px] = 1; stack.push(px); } };
+  for (let x = 0; x < w; x++) { push(x); push((h - 1) * w + x); }
+  for (let y = 0; y < h; y++) { push(y * w); push(y * w + w - 1); }
+  let removed = 0;
+  while (stack.length) {
+    const px = stack.pop();
+    p[px * 4 + 3] = 0; removed++;
+    const x = px % w, y = (px - x) / w;
+    if (x > 0)     push(px - 1);
+    if (x < w - 1) push(px + 1);
+    if (y > 0)     push(px - w);
+    if (y < h - 1) push(px + w);
+  }
+
+  // إذا اختفت الصورة تقريباً (مثلاً شعار أبيض) نُبقي الصورة بعد قصّ الحدود فقط
+  if (removed > w * h * 0.93) return trimmed;
+
+  /* ---------- 4) تنعيم الحواف ---------- */
+  const alpha0 = new Uint8Array(w * h);
+  for (let px = 0; px < w * h; px++) alpha0[px] = seen[px] ? 0 : 1;
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const px = y * w + x;
+      if (!alpha0[px]) continue;
+      if (seen[px - 1] || seen[px + 1] || seen[px - w] || seen[px + w]) {
+        const dd = dist(px * 4);
+        if (dd < TOL * 1.8) {
+          const a = Math.max(0, Math.min(1, (dd - TOL) / (TOL * 0.8)));
+          p[px * 4 + 3] = Math.round(p[px * 4 + 3] * a);
+        }
+      }
+    }
+  }
+  ctx.putImageData(id, 0, 0);
+
+  /* ---------- 5) قصّ المساحة الشفافة حول الموضوع ---------- */
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (p[(y * w + x) * 4 + 3] > 16) {
+        if (x < x0) x0 = x; if (x > x1) x1 = x;
+        if (y < y0) y0 = y; if (y > y1) y1 = y;
+      }
+    }
+  }
+  if (x1 < 0) return trimmed;
+  x0 = Math.max(0, x0 - 2); y0 = Math.max(0, y0 - 2);
+  x1 = Math.min(w - 1, x1 + 2); y1 = Math.min(h - 1, y1 + 2);
+
+  const out = document.createElement('canvas');
+  out.width = x1 - x0 + 1; out.height = y1 - y0 + 1;
+  out.getContext('2d').drawImage(c2, x0, y0, out.width, out.height, 0, 0, out.width, out.height);
+  return out;
+}
+
+/* ترميز الصورة الشفافة بحجم يتسع في خلية الشيت (WebP مع شفافية، أو PNG كبديل) */
+function mtEncodeTransparent(cv, startSize) {
+  let size = startSize, q = 0.8, out = '';
+  for (let i = 0; i < 40; i++) {
+    const k = Math.min(1, size / Math.max(cv.width, cv.height));
+    const c = document.createElement('canvas');
+    c.width  = Math.max(1, Math.round(cv.width  * k));
+    c.height = Math.max(1, Math.round(cv.height * k));
+    c.getContext('2d').drawImage(cv, 0, 0, c.width, c.height);
+
+    out = c.toDataURL('image/webp', q);
+    const isWebp = out.startsWith('data:image/webp');
+    if (!isWebp) out = c.toDataURL('image/png');   // سفاري لا يدعم ترميز WebP
+
+    if (out.length <= MT_MAX_CHARS) return out;
+    if (isWebp && q > 0.4) q -= 0.1; else size = Math.round(size * 0.85);
+  }
+  return '';
+}
+
+async function mtOnPhoto(e) {
   const file = e.target.files[0];
   e.target.value = '';
   if (!file) return;
   const f = mtPhotoTarget;
-  const logo = (f === 'MatchTeamPhoto' || f === 'MatchTeamVPhoto');
-  // الشعار PNG (يحافظ على الشفافية)، والباقي JPEG
-  mtResize(file, logo ? 220 : 600, logo, out => {
+
+  const setThumb = out => {
     mtPhotos[f] = out;
     const el = document.getElementById('mtth_' + f);
-    if (el) el.outerHTML = `<img id="mtth_${f}" class="mt-logo editable" src="${out}" onclick="mtPickPhoto('${f}')" alt="">`;
-  });
+    if (el) el.outerHTML =
+      `<img id="mtth_${f}" class="mt-logo editable" src="${out}" onclick="mtPickPhoto('${f}')" alt="">`;
+  };
+
+  /* الخطة: تبقى كما كانت (JPEG بدون إزالة خلفية) */
+  if (!MT_NOBG_FIELDS.includes(f)) {
+    mtResize(file, 600, false, setThumb);
+    return;
+  }
+
+  /* الشعارات والصور الجماعية: إزالة الخلفية والحدود */
+  const logo = (f === 'MatchTeamPhoto' || f === 'MatchTeamVPhoto');
+  const thumbEl = document.getElementById('mtth_' + f);
+  if (thumbEl) thumbEl.style.opacity = '.4';
+
+  try {
+    const img = await mtLoadFileImg(file);
+    const cut = mtCutBackground(img, logo ? 400 : 650);
+    const out = mtEncodeTransparent(cut, logo ? 220 : 600);
+    if (!out) throw new Error('تعذّر تصغير الصورة بما يكفي، اختر صورة أخرى');
+    setThumb(out);
+  } catch (err) {
+    if (thumbEl) thumbEl.style.opacity = '';
+    alert(err.message || 'تعذّرت معالجة الصورة');
+  }
 }
 
 /* ===== محرر الأهداف والكروت (أسفل الصف) ===== */
