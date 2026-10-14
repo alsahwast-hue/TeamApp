@@ -211,7 +211,7 @@
 
   .admin-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 5px; }
   .admin-table th { background: #1e3c72; color: #fff; padding: 10px 6px; font-size: 12px; }
-  .admin-table td { padding: 6px; border-bottom: 1px solid #eee; text-align: center; vertical-align: middle; }
+  .admin-table td { padding: 6px; border-bottom: 1px solid #979494; text-align: center; vertical-align: middle; }
   .admin-table tr:nth-child(even) td { background: #f9f9f9; }
 
   .admin-table input[type="date"],
@@ -456,6 +456,11 @@
 .bookings-table select.state-select.confirmed{ background: #d4edda; color: #155724; border-color: #28a745; }
 .bookings-table select.state-select.cancelled{ background: #f8d7da; color: #721c24; border-color: #dc3545; }
 .bookings-empty { text-align: center; color: #888; padding: 40px 10px; font-size: 14px; }
+/* ===== حالة انتظار الدفع (بحري) ===== */
+.bookings-table select.state-select.waiting { background:#6d9aec; color:#fff; border-color:#1e3c72; }
+.badge.waiting { background:#1e3c72; color:#fff; }
+.report-card.waiting { background: linear-gradient(135deg,#6d9aec,#6d9aec); }
+.report-table .waiting { color:#1e3c72; font-weight:700; }
 /* سبينر أبيض للزر الأخضر */
 .btn.green.loading::after {
   border-color: rgba(255,255,255,.4);
@@ -499,6 +504,17 @@
   border: 1px solid #d4a017; border-radius: 6px;
   background: #fffbe6; text-align: center;
 }
+/* ===== ألوان حقل الملاحظة حسب نوعها ===== */
+.bookings-table .note-input.note-yellow { background:#fff3cd; border-color:#ffc107; color:#000000; }
+.bookings-table .note-input.note-green  { background:#d4edda; border-color:#28a745; color:#000000; }
+.bookings-table .note-input.note-red    { background:#f8d7da; border-color:#dc3545; color:#000000; }
+
+/* صندوق الملاحظة في نافذة طلباتي */
+.my-note-box { padding:8px 10px; border-radius:6px; background:#f5f7fa; border:1px solid #e0e0e0; text-align:center; }
+.my-note-box .my-note-label { font-weight:700; margin-inline-end:6px; }
+.my-note-box.note-yellow { background:#fff3cd; border-color:#ffc107; color:#000000; }
+.my-note-box.note-green  { background:#d4edda; border-color:#28a745; color:#000000; }
+.my-note-box.note-red    { background:#f8d7da; border-color:#dc3545; color:#000000; }
 .bookings-table .note-input.show { display: block; }
 .bookings-table .note-input:focus { outline: none; border-color: #2a5298; }
 /* زر إغلاق شاشة الإدارة */
@@ -950,6 +966,73 @@ body.has-install-bar { padding-bottom: 80px; }
 #matchAdModal { z-index:2600; }
 #matchAdBox canvas { width:100%; height:auto; border-radius:12px; display:block; }
 .mt-logo { object-fit: contain; background: #fff; }
+.bookings-table {
+  border-collapse: separate;   /* مهم */    /* مسافة بين كل طلب والذي بعده */
+}
+
+/* صف الطلب: حد علوي */
+.bookings-table tr.booking-row td {
+  border-top: 2px solid #000;
+}
+/* الخلية الأولى والأخيرة: الحدود الجانبية */
+.bookings-table tr.booking-row td:first-child {
+  border-right: 2px solid #000;   /* RTL: الأول على اليمين */
+}
+.bookings-table tr.booking-row td:last-child {
+  border-left: 2px solid #000;
+}
+
+/* صف الملاحظة: حد سفلي + جانبان */
+.bookings-table tr.my-note-row td {
+  border-bottom: 2px solid #000;
+  border-right: 2px solid #000;
+  border-left: 2px solid #000;
+}
+/* ===== صف الملاحظة أسفل صف الطلب (في الوسط) ===== */
+.bookings-table tr.bk-main td,
+.bookings-table tr.bk-note-row td { background: #fff;padding: 1px 10px;  }
+.bookings-table tr.bk-main td {
+  border-top: 2px solid #000;
+}
+.bookings-table tr.bk-main td:first-child { border-right: 2px solid #000;  padding: 1px 10px; }
+.bookings-table tr.bk-main td:last-child  { border-left: 2px solid #000; }
+.bookings-table tr.bk-note-row td {
+  border-bottom: 2px solid #000;
+  border-right: 2px solid #000;
+  border-left: 2px solid #000;
+  padding: 1px 10px;
+  text-align: center;
+}
+.bookings-table .note-input {
+  display: block;
+  width: 100%; max-width: 520px; margin: 0 auto;
+  padding: 6px 10px; font-size: 13px;
+  font-family: 'Cairo', sans-serif;
+  border: 1px solid #d4a017; border-radius: 6px;
+  background: #ffffff; text-align: center;
+}
+.bookings-table .note-input:focus { outline: none; border-color: #2a5298; }
+.bookings-table .note-input:disabled { background: #eee; }
+
+/* قائمة اقتراحات الملاحظة */
+.note-suggest {
+  position: fixed; z-index: 5000;
+  background: #fff; border: 2px solid #f0b90b; border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+  max-height: 260px; overflow-y: auto; display: none;
+  direction: rtl;
+}
+.note-suggest.show { display: block; }
+.note-suggest .ns-item {
+  padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #eee;
+  font-size: 13px; font-weight: 600; color: #1e3c72; line-height: 1.5;
+  text-align: right;
+}
+.note-suggest .ns-item:last-child { border-bottom: none; }
+.note-suggest .ns-item:hover { background: #fffbe6; }
+
+.bookings-table .note-input.note-navy { background:#6d9aec; border-color:#1e3c72; color:#fff; }
+.my-note-box.note-navy  { background:#6d9aec; border-color:#1e3c72; color:#fff; }
 
 </style>
 </head>
@@ -1079,9 +1162,8 @@ body.has-install-bar { padding-bottom: 80px; }
 <!-- ===== العرض 2: حاويات الأيام ===== -->
 <div id="viewCards" style="display:none">
   <div class="field">
-    <label>📅 اختر التاريخ</label>
     <div class="date-row">
-      <input type="date" id="cardsDate" onchange="onCardsDateChange()">
+      📅 اختر التاريخ<input type="date" id="cardsDate" onchange="onCardsDateChange()">
       <select id="calCols" onchange="setCalCols(this.value)" title="عدد الأعمدة">
         <option value="1">1 عمود</option>
         <option value="2" selected>2 عمودان</option>
@@ -1750,6 +1832,7 @@ body.has-install-bar { padding-bottom: 80px; }
 </div>
 
 <div id="subSuggest" class="sub-suggest"></div>
+<div id="noteSuggest" class="note-suggest"></div>
 <script>
 /* ============================================================
    إعدادات السكربتات
@@ -2427,7 +2510,7 @@ async function submitBooking() {
   const from = document.getElementById('timeFrom').value;
   const to   = document.getElementById('timeTo').value;
   const cost = document.getElementById('cost').value;
-  const note = document.getElementById('note').value;
+  const note = DEFAULT_NOTE;
 
   if (!user) {
     document.getElementById('bookMsg').innerHTML = 
@@ -3951,14 +4034,15 @@ function renderBookingsTable(rows) {
   }
 
   // ترتيب حسب التاريخ (الأحدث أولاً)
- filtered = [...filtered].sort((a, b) => {
+  filtered = [...filtered].sort((a, b) => {
+    const na = parseInt(String(a.RegNo || '').replace(/\D/g, ''), 10) || 0;
+    const nb = parseInt(String(b.RegNo || '').replace(/\D/g, ''), 10) || 0;
+    if (na !== nb) return nb - na;
+
+    // عند تساوي الرقم: التاريخ ثم وقت البداية (الأحدث أولاً)
     const da = normalizeDate(a.RegDate) || '';
     const db = normalizeDate(b.RegDate) || '';
     if (da !== db) return db.localeCompare(da);
-
-    const na = parseInt(String(a.RegNo || '').replace(/\D/g, '')) || 0;
-    const nb = parseInt(String(b.RegNo || '').replace(/\D/g, '')) || 0;
-    if (na !== nb) return nb - na;
 
     return (to24(b.RegTimeFrom) || '').localeCompare(to24(a.RegTimeFrom) || '');
   });
@@ -3988,13 +4072,14 @@ function renderBookingsTable(rows) {
     const to     = r.RegTimeTo || '-';
     const cost   = r.RegCost || '-';
     const state  = String(r.RegState || 'في الإجراء').trim();
-    const note   = r.RegNote || '';
+    const note   = r.RegNote || (state === 'في الإجراء' ? DEFAULT_NOTE : '');
 
-    let stateCls = 'pending';
+        let stateCls = 'pending';
     if (state === 'تم الحجز') stateCls = 'confirmed';
     else if (state === 'ملغي') stateCls = 'cancelled';
+    else if (state === 'انتظار الدفع') stateCls = 'waiting';
 
-    html += `<tr data-regid="${regId}">
+    html += `<tr class="bk-main" data-regid="${regId}">
       <td><strong>${regNo}</strong></td>
       <td>${name}</td>
       <td>${tel}</td>
@@ -4008,17 +4093,25 @@ function renderBookingsTable(rows) {
           data-original="${state}"
           onchange="onBookingStateChange('${regId}', this)">
           <option value="في الإجراء" ${state === 'في الإجراء' ? 'selected' : ''}>في الإجراء</option>
+          <option value="انتظار الدفع" ${state === 'انتظار الدفع' ? 'selected' : ''}>انتظار الدفع</option>
           <option value="تم الحجز"  ${state === 'تم الحجز'  ? 'selected' : ''}>تم الحجز</option>
           <option value="ملغي"      ${state === 'ملغي'      ? 'selected' : ''}>ملغي</option>
         </select>
-        <input type="text" class="note-input" id="bkNote_${regId}"
-          data-original="${escAttr(note)}" value="${escAttr(note)}"
-          placeholder="أضف ملاحظة...">
       </td>
       <td style="white-space:nowrap">
         <button class="btn small green" id="saveBk_${regId}" disabled
           onclick="saveBookingState('${regId}', this)">💾</button>
         <button class="btn small red" onclick="deleteBooking('${regId}')">🗑</button>
+      </td>
+    </tr>
+    <tr class="bk-note-row">
+      <td colspan="10">
+        <input type="text" class="note-input ${noteColorClass(note)}" id="bkNote_${regId}"
+          data-original="${escAttr(note)}" value="${escAttr(note)}"
+          placeholder="📝 اضغط لاختيار ملاحظة أو اكتبها..."
+          onfocus="showNoteSuggest(this, '${regId}')"
+          oninput="onBookingNoteInput('${regId}')"
+          onblur="setTimeout(hideNoteSuggest,150)">
       </td>
     </tr>`;
   });
@@ -4028,45 +4121,113 @@ function renderBookingsTable(rows) {
 }
 
 /* ============ اقتراحات الملاحظة حسب الحالة ============ */
-const NOTE_SUGGESTIONS = {
-  'تم الحجز': 'تم تأكيد الحجز، الرجاء إرسال إيصال الدفع على الرقم: ',
-  'ملغي':     'نعتذر عن إلغاء الحجز بسبب: ',
-  'في الإجراء': ''
-};
+const DEFAULT_NOTE = 'طلبك في المتابعة سيتم اشعارك بالتحديث الجديد';
 
-function onBookingStateChange(regId, selEl) {
-  selEl.classList.remove('pending', 'confirmed', 'cancelled');
-  if (selEl.value === 'تم الحجز') selEl.classList.add('confirmed');
-  else if (selEl.value === 'ملغي') selEl.classList.add('cancelled');
-  else selEl.classList.add('pending');
+const NOTE_OPTIONS = [
+  DEFAULT_NOTE,
+  'لتأكيد الحجز الرجاء ارسال ايصال الدفع الى الرقم : ',
+  'تم تأكيد الحجز الرجاء الالتزام بموعد الحجز ، شكرا لكم',
+  'نعتذر عن الغاء الحجز بسبب : '
+];
 
-  const changed = selEl.value !== selEl.dataset.original;
-  const btn = document.getElementById('saveBk_' + regId);
-  if (btn) btn.disabled = !changed;
+/* تحديد لون الملاحظة من بداية نصها (يتجاهل اختلاف الهمزات) */
+function noteColorClass(text) {
+  const s = String(text || '').trim().replace(/[أإآ]/g, 'ا');
+  if (s.startsWith('طلبك في المتابعة')) return 'note-yellow';
+  if (s.startsWith('لتاكيد الحجز'))     return 'note-navy';
+  if (s.startsWith('تم تاكيد الحجز'))   return 'note-green';
+  if (s.startsWith('نعتذر عن الغاء'))   return 'note-red';
+  return '';
+}
 
-  const noteEl = document.getElementById('bkNote_' + regId);
-  if (noteEl) {
-    if (changed) {
-      noteEl.classList.add('show');
+/* الحالة المقابلة لكل ملاحظة */
+function noteToState(text) {
+  switch (noteColorClass(text)) {
+    case 'note-yellow': return 'في الإجراء';
+    case 'note-navy':   return 'انتظار الدفع';
+    case 'note-green':  return 'تم الحجز';
+    case 'note-red':    return 'ملغي';
+    default:            return '';
+  }
+}
 
-      // املأ الاقتراح فقط إذا كان الحقل فارغاً أو يحتوي على اقتراح سابق لم يُعدَّل
-      const current = noteEl.value.trim();
-      const isSuggestion = Object.values(NOTE_SUGGESTIONS)
-        .some(s => s && current === s.trim());
+function applyNoteColor(input) {
+  input.classList.remove('note-yellow', 'note-navy', 'note-green', 'note-red');
+  const c = noteColorClass(input.value);
+  if (c) input.classList.add(c);
+}
 
-      if (!current || isSuggestion) {
-        noteEl.value = NOTE_SUGGESTIONS[selEl.value] || '';
+function showNoteSuggest(input, regId) {
+  const box = document.getElementById('noteSuggest');
+
+  box.innerHTML = NOTE_OPTIONS.map((t, i) =>
+    `<div class="ns-item" data-i="${i}">${escAttr(t)}</div>`).join('');
+
+  box.querySelectorAll('.ns-item').forEach(el => {
+    el.addEventListener('mousedown', ev => {
+      ev.preventDefault();   // حتى لا يفقد الحقل التركيز قبل الاختيار
+      input.value = NOTE_OPTIONS[el.dataset.i];
+      hideNoteSuggest();
+      onBookingNoteInput(regId);
+      input.focus();
+      const len = input.value.length;
+      input.setSelectionRange(len, len);
+    });
+  });
+
+  // القائمة تظهر تحت الحقل وبنفس عرضه تقريباً (في الوسط)
+  const r = input.getBoundingClientRect();
+  const w = Math.min(Math.max(r.width, 280), document.documentElement.clientWidth - 16);
+  box.style.width = w + 'px';
+  box.style.top = (r.bottom + 2) + 'px';
+  box.style.right = 'auto';
+  box.style.left = Math.max(8, r.left + (r.width - w) / 2) + 'px';
+  box.classList.add('show');
+}
+
+function hideNoteSuggest() {
+  document.getElementById('noteSuggest').classList.remove('show');
+}
+
+document.querySelector('#bookingsModal .modal-body')
+  .addEventListener('scroll', hideNoteSuggest);
+
+/* تفعيل زر الحفظ عند تغيّر الحالة أو الملاحظة */
+function updateBookingSaveBtn(regId) {
+  const tr   = document.querySelector(`tr[data-regid="${regId}"]`);
+  const sel  = tr ? tr.querySelector('select.state-select') : null;
+  const note = document.getElementById('bkNote_' + regId);
+  const btn  = document.getElementById('saveBk_' + regId);
+  if (!sel || !note || !btn) return;
+  btn.disabled = !(sel.value !== sel.dataset.original ||
+                   note.value.trim() !== (note.dataset.original || '').trim());
+}
+
+function onBookingNoteInput(regId) {
+  const note = document.getElementById('bkNote_' + regId);
+  if (note) {
+    applyNoteColor(note);
+
+    const st = noteToState(note.value);
+    if (st) {
+      const tr  = document.querySelector(`tr[data-regid="${regId}"]`);
+      const sel = tr ? tr.querySelector('select.state-select') : null;
+      if (sel && sel.value !== st) {
+        sel.value = st;
+        onBookingStateChange(regId, sel);   // يغيّر لون الحالة (بحري/أخضر/أحمر/أصفر)
       }
-
-      noteEl.focus();
-      // ضع المؤشر في نهاية النص ليكتب المدير مباشرة بعده
-      const len = noteEl.value.length;
-      noteEl.setSelectionRange(len, len);
-    } else {
-      noteEl.classList.remove('show');
-      noteEl.value = noteEl.dataset.original;
     }
   }
+  updateBookingSaveBtn(regId);
+}
+
+function onBookingStateChange(regId, selEl) {
+  selEl.classList.remove('pending', 'confirmed', 'cancelled', 'waiting');
+  if (selEl.value === 'تم الحجز') selEl.classList.add('confirmed');
+  else if (selEl.value === 'ملغي') selEl.classList.add('cancelled');
+  else if (selEl.value === 'انتظار الدفع') selEl.classList.add('waiting');
+  else selEl.classList.add('pending');
+  updateBookingSaveBtn(regId);
 }
 
 /* ============ حفظ الحالة عند الضغط على زر الحفظ ============ */
@@ -4106,11 +4267,10 @@ if (data.success) {
       if (row) { row.RegState = newState; row.RegNote = newNote; }
       selEl.dataset.original = newState;
 
-      if (noteEl) {
+    if (noteEl) {
         noteEl.dataset.original = newNote;
         noteEl.value = newNote;
-        noteEl.classList.remove('show');   // أغلق الحقل بعد الحفظ
-      }   // ← يُغلق الـ if هنا
+      }
 
       if (row) {
         if (newState === 'ملغي') {
@@ -4121,7 +4281,7 @@ if (data.success) {
       }
 
       // اعرض نافذة الواتس اب عند "تم الحجز" أو "ملغي"
-      if (row && (newState === 'تم الحجز' || newState === 'ملغي')) {
+      if (row && (newState === 'تم الحجز' || newState === 'ملغي' || newState === 'انتظار الدفع')) {
         offerWhatsApp(row, newState, newNote);
       }
     } else {
@@ -4134,7 +4294,7 @@ if (data.success) {
     btnEl.dataset.busy = '0';
     selEl.disabled = false;
     if (noteEl) noteEl.disabled = false;
-    btnEl.disabled = ok || (selEl.value === selEl.dataset.original);
+    updateBookingSaveBtn(regId);
   }
 }
 
@@ -4319,10 +4479,11 @@ function renderBookingsReportModal() {
     const rows = (bookingsRowsCache || []).filter(r =>
     !bookingsSearchYear || (normalizeDate(r.RegDate) || '').slice(0, 4) === bookingsSearchYear);
 
-  const st = {
-    'تم الحجز':   { n: 0, sum: 0, cls: 'paid' },
-    'ملغي':       { n: 0, sum: 0, cls: 'unpaid' },
-    'في الإجراء': { n: 0, sum: 0, cls: 'pending' }
+   const st = {
+    'تم الحجز':    { n: 0, sum: 0, cls: 'paid' },
+    'ملغي':        { n: 0, sum: 0, cls: 'unpaid' },
+    'في الإجراء':  { n: 0, sum: 0, cls: 'pending' },
+    'انتظار الدفع': { n: 0, sum: 0, cls: 'waiting' }
   };
 
   rows.forEach(r => {
@@ -4359,6 +4520,10 @@ function renderBookingsReportModal() {
         <h4>في الإجراء</h4>
         <div class="val">${st['في الإجراء'].n}</div>
       </div>
+         <div class="report-card waiting">
+        <h4>انتظار الدفع</h4>
+        <div class="val">${st['انتظار الدفع'].n}</div>
+      </div>
     </div>
 
     <h3 style="color:#1e3c72;margin:20px 0 10px;">📌 التفصيل حسب الحالة</h3>
@@ -4371,7 +4536,7 @@ function renderBookingsReportModal() {
           <th>النسبة</th>
         </tr></thead><tbody>`;
 
-  ['تم الحجز', 'في الإجراء', 'ملغي'].forEach(k => {
+    ['تم الحجز', 'انتظار الدفع', 'في الإجراء', 'ملغي'].forEach(k => {
     const amount = (k === 'تم الحجز') ? st[k].sum.toFixed(3) + ' ر.ع' : '—';
     html += `<tr>
       <td class="${st[k].cls}">${k}</td>
@@ -4470,12 +4635,16 @@ function renderMyBookings() {
 
   // الأحدث أولاً (التاريخ ثم رقم الطلب)
   list = [...list].sort((a, b) => {
+    const na = parseInt(String(a.RegNo || '').replace(/\D/g, ''), 10) || 0;
+    const nb = parseInt(String(b.RegNo || '').replace(/\D/g, ''), 10) || 0;
+    if (na !== nb) return nb - na;
+
+    // عند تساوي الرقم: التاريخ ثم وقت البداية (الأحدث أولاً)
     const da = normalizeDate(a.RegDate) || '';
     const db = normalizeDate(b.RegDate) || '';
     if (da !== db) return db.localeCompare(da);
-    const na = parseInt(String(a.RegNo || '').replace(/\D/g, '')) || 0;
-    const nb = parseInt(String(b.RegNo || '').replace(/\D/g, '')) || 0;
-    return nb - na;
+
+    return (to24(b.RegTimeFrom) || '').localeCompare(to24(a.RegTimeFrom) || '');
   });
 
   let html = `<div style="overflow-x:auto;"><table class="bookings-table">
@@ -4491,14 +4660,15 @@ function renderMyBookings() {
 
   list.forEach(r => {
     const state = String(r.RegState || 'في الإجراء').trim();
-    let cls = 'pending';
+      let cls = 'pending';
     if (state === 'تم الحجز') cls = 'confirmed';
     else if (state === 'ملغي') cls = 'cancelled';
+    else if (state === 'انتظار الدفع') cls = 'waiting';
 
-    const note = String(r.RegNote || '').trim();
+    const note = String(r.RegNote || '').trim() || (state === 'في الإجراء' ? DEFAULT_NOTE : '');
 
-    html += `<tr>
-      <td><strong>${escAttr(r.RegNo || '-')}</strong></td>
+   html += `<tr class="booking-row">
+  <td><strong>${escAttr(r.RegNo || '-')}</strong></td>
       <td>${normalizeDate(r.RegDate) || '-'}</td>
       <td>${escAttr(r.Regday || '-')}</td>
       <td>${escAttr(r.RegTimeFrom || '-')}</td>
@@ -4511,7 +4681,7 @@ function renderMyBookings() {
     if (note) {
       html += `<tr class="my-note-row">
         <td colspan="7">
-          <div class="my-note-box">
+          <div class="my-note-box ${noteColorClass(note)}">
             <span class="my-note-label">📝 ملاحظة:</span>
             <span class="my-note-text">${escAttr(note)}</span>
           </div>
