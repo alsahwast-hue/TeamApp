@@ -1048,6 +1048,15 @@ body.has-install-bar { padding-bottom: 80px; }
 .loc-search input:focus { border-color:#2a5298; outline:none; }
 #locMap { width:100%; height:260px; border-radius:10px; margin-bottom:8px; z-index:0; isolation:isolate; }
 .loc-hint { font-size:12px; color:#666; text-align:center; margin-bottom:6px; }
+.booking-title-center {
+  display: flex; flex-direction: column; align-items: center;
+  align-self: center; gap: 2px;
+}
+.stadium-link {
+  color: #0b6fc2; font-size: 15px; font-weight: 800;
+  text-decoration: underline; cursor: pointer;
+}
+.stadium-link:hover { color: #f0b90b; }
 
 </style>
 </head>
@@ -1131,7 +1140,10 @@ body.has-install-bar { padding-bottom: 80px; }
     <img id="clubLogoHeader" class="title-logo" alt="شعار النادي">
     <div class="title-year" id="clubYearHeader"></div>
   </div>
-  <h2>حجز جديد</h2>
+   <div class="booking-title-center">
+    <h2>حجز جديد</h2>
+    <a id="stadiumLocLink" class="stadium-link" href="#" target="_blank" rel="noopener" style="display:none">موقع الملعب</a>
+  </div>
   <div class="title-logo-box" id="teamLogoBox" style="display:none">
     <img id="teamLogoHeader" class="title-logo" alt="شعار الفريق">
     <div class="title-year" id="teamYearHeader"></div>
@@ -1913,6 +1925,14 @@ function show(id) {
   document.getElementById(id).classList.add('active');
 }
 
+
+/* منع إغلاق النوافذ عند الضغط على الخلفية */
+document.addEventListener('click', function (e) {
+  if (e.target.classList && e.target.classList.contains('modal-overlay')) {
+    e.stopPropagation();
+  }
+}, true);
+
 /* ============ Splash + تحميل البيانات ============ */
 const DEFAULT_LOGO = 'data:image/svg+xml;utf8,' + encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140"><rect width="140" height="140" fill="#1e3c72"/><text x="70" y="82" font-size="34" text-anchor="middle" fill="#f0b90b" font-family="sans-serif">LOGO</text></svg>'
@@ -1949,7 +1969,21 @@ function applyTeamToSplash(team) {
 }, remaining);
 })();
 
+function applyStadiumLink(team) {
+  const a = document.getElementById('stadiumLocLink');
+  if (!a) return;
+  const link = team && team.TeamLocationLink;
+  if (link) {
+    a.href = link;
+    a.style.display = '';
+  } else {
+    a.removeAttribute('href');
+    a.style.display = 'none';
+  }
+}
+
 function applyHeaderLogos(team) {
+  applyStadiumLink(team); 
   const set = (boxId, imgId, yearId, url, year, label) => {
     const box  = document.getElementById(boxId);
     const img  = document.getElementById(imgId);
