@@ -1057,6 +1057,24 @@ body.has-install-bar { padding-bottom: 80px; }
   text-decoration: underline; cursor: pointer;
 }
 .stadium-link:hover { color: #f0b90b; }
+/* ===== مظهر خريطة شبيه بجوجل ===== */
+#locMap { height: 300px; transition: height .25s; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+#locMap.big { height: 70vh; }
+#locMap .leaflet-control-zoom,
+#locMap .leaflet-control-layers,
+#locMap .leaflet-bar a {
+  border: none !important; border-radius: 8px !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,.3) !important;
+}
+#locMap .leaflet-control-zoom a { width: 36px; height: 36px; line-height: 36px; font-size: 20px; color: #333; }
+#locMap .leaflet-control-layers { padding: 4px 8px; font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 600; direction: rtl; }
+.gpin { filter: drop-shadow(0 3px 3px rgba(0,0,0,.4)); transition: transform .15s; }
+.gpin.lifting { transform: translateY(-10px) scale(1.1); }
+.loc-expand {
+  width: 36px; height: 36px; background: #fff; border: none; border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.3); font-size: 18px; cursor: pointer;
+}
+.loc-expand:hover { background: #f4f4f4; }
 
 </style>
 </head>
@@ -7498,6 +7516,63 @@ function toggleLocPanel() {
   }
 }
 
+/* دبوس أحمر مثل جوجل */
+const GPIN = L.divIcon && L.divIcon({
+  className: '',
+  html: `<svg class="gpin" width="34" height="46" viewBox="0 0 34 46" xmlns="http://www.w3.org/2000/svg">
+    <path d="M17 0C7.6 0 0 7.6 0 17c0 12.8 17 29 17 29s17-16.2 17-29C34 7.6 26.4 0 17 0z" fill="#ea4335"/>
+    <path d="M17 0C7.6 0 0 7.6 0 17c0 12.8 17 29 17 29s17-16.2 17-29C34 7.6 26.4 0 17 0z" fill="none" stroke="#b31412" stroke-width="1"/>
+    <circle cx="17" cy="17" r="6.5" fill="#7b0d0a"/></svg>`,
+  iconSize: [34, 46],
+  iconAnchor: [17, 46]
+});
+
+function buildLocMap() {
+  const streets = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    subdomains: 'abcd', maxZoom: 20, attribution: '© OpenStreetMap © CARTO'
+  });
+  const sat = L.layerGroup([
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19, attribution: 'Tiles © Esri'
+    }),
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png', {
+      subdomains: 'abcd', maxZoom: 20
+    })
+  ]);
+
+  const map = L.map('locMap', {
+    zoomControl: false,
+    layers: [streets],
+    tap: true,
+    zoomSnap: 0.5,
+    wheelPxPerZoomLevel: 90
+  });
+
+  L.control.zoom({ position: 'bottomright', zoomInTitle: 'تكبير', zoomOutTitle: 'تصغير' }).addTo(map);
+  L.control.layers({ '🗺️ خريطة': streets, '🛰️ قمر صناعي': sat }, null, { position: 'topright' }).addTo(map);
+  L.control.scale({ imperial: false, position: 'bottomleft' }).addTo(map);
+
+  /* زر تكبير الخريطة */
+  const Expand = L.Control.extend({
+    options: { position: 'topleft' },
+    onAdd: function () {
+      const b = L.DomUtil.create('button', 'loc-expand');
+      b.type = 'button'; b.title = 'ملء الشاشة'; b.textContent = '⛶';
+      L.DomEvent.disableClickPropagation(b);
+      b.onclick = () => {
+        const el = document.getElementById('locMap');
+        el.classList.toggle('big');
+        b.textContent = el.classList.contains('big') ? '⤡' : '⛶';
+        setTimeout(() => map.invalidateSize(), 300);
+      };
+      return b;
+    }
+  });
+  map.addControl(new Expand());
+
+  return map;
+}
+
 function initLocMap() {
   if (typeof L === 'undefined') {
     document.getElementById('locMsg').innerHTML = '<div class="error-msg">تعذّر تحميل مكتبة الخريطة (تحقق من الإنترنت)</div>';
@@ -7510,11 +7585,9 @@ function initLocMap() {
     center = [parseFloat(m[1]), parseFloat(m[2])]; zoom = 16;
   }
 
-  if (!locMap) {
-    locMap = L.map('locMap').setView(center, zoom);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19, attribution: '© OpenStreetMap'
-    }).addTo(locMap);
+    if (!locMap) {
+    locMap = buildLocMap();
+    locMap.setView(center, zoom);
     locMap.on('click', e => locSetPoint(e.latlng.lat, e.latlng.lng, true));
   } else {
     locMap.setView(center, zoom);
@@ -7530,13 +7603,16 @@ function initLocMap() {
 function locSetPoint(lat, lng, reverse) {
   locTmp = { lat, lng };
   if (!locMarker) {
-    locMarker = L.marker([lat, lng], { draggable: true }).addTo(locMap);
+     locMarker = L.marker([lat, lng], { draggable: true, icon: GPIN, autoPan: true }).addTo(locMap);
+    locMarker.on('dragstart', () => document.querySelector('.gpin')?.classList.add('lifting'));
     locMarker.on('dragend', () => {
+      document.querySelector('.gpin')?.classList.remove('lifting');
       const p = locMarker.getLatLng();
       locSetPoint(p.lat, p.lng, true);
     });
   } else {
     locMarker.setLatLng([lat, lng]);
+     locMap.panTo([lat, lng], { animate: true });
   }
   if (reverse) locReverse(lat, lng);
 }
