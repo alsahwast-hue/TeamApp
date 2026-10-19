@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>حجز الملعب</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1e3c72">
 <link rel="icon" href="icon-192.png">
@@ -1033,6 +1035,19 @@ body.has-install-bar { padding-bottom: 80px; }
 
 .bookings-table .note-input.note-navy { background:#6d9aec; border-color:#1e3c72; color:#fff; }
 .my-note-box.note-navy  { background:#6d9aec; border-color:#1e3c72; color:#fff; }
+/* ===== موقع الفريق ===== */
+.loc-card {
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  background:#f5f7fa; border:2px solid #e0e0e0; border-radius:10px; padding:8px 10px;
+}
+.loc-card .loc-name { font-weight:700; color:#1e3c72; flex:1; min-width:120px; font-size:13px; }
+.loc-card a { color:#0b6fc2; font-weight:700; font-size:13px; text-decoration:underline; }
+#locPanel { margin-top:12px; border:2px solid #2a5298; border-radius:12px; padding:10px; background:#f8faff; }
+.loc-search { display:flex; gap:6px; margin-bottom:8px; }
+.loc-search input { flex:1; min-width:0; padding:10px; border:2px solid #e0e0e0; border-radius:10px; font-size:14px; }
+.loc-search input:focus { border-color:#2a5298; outline:none; }
+#locMap { width:100%; height:260px; border-radius:10px; margin-bottom:8px; z-index:0; isolation:isolate; }
+.loc-hint { font-size:12px; color:#666; text-align:center; margin-bottom:6px; }
 
 </style>
 </head>
@@ -1289,8 +1304,33 @@ body.has-install-bar { padding-bottom: 80px; }
           <label>سنة تأسيس النادي</label>
           <input type="number" id="cloubOldField" placeholder="مثال: 1980" min="1900" max="2100">
         </div>
+         <div class="field" id="teamLocShow" style="display:none; margin-bottom:10px;">
+        <label>📍 موقع الفريق</label>
+        <div class="loc-card">
+          <span class="loc-name" id="teamLocName"></span>
+          <a id="teamLocLink" href="#" target="_blank" rel="noopener">فتح الخريطة</a>
+          <button type="button" class="btn small red" onclick="clearTeamLoc()">🗑</button>
+        </div>
       </div>
+      </div>
+<button type="button" class="btn" id="locToggleBtn" style="margin-bottom:10px;" onclick="toggleLocPanel()">📍 موقع الفريق</button>
 
+      <div id="locPanel" style="display:none;">
+        <div class="loc-search">
+          <input type="text" id="locSearchInput" placeholder="ابحث عن مكان..."
+                 onkeydown="if(event.key==='Enter'){event.preventDefault();locSearch();}">
+          <button type="button" class="btn small gold" onclick="locSearch()">🔍 بحث</button>
+          <button type="button" class="btn small" onclick="locCurrent()">📍 موقعي</button>
+        </div>
+        <div id="locMap"></div>
+        <div class="loc-hint">اضغط على الخريطة أو اسحب العلامة لتحديد الموقع</div>
+        <div class="field">
+          <label>اسم الموقع</label>
+          <input type="text" id="locNameInput" placeholder="يظهر تلقائياً ويمكنك تعديله">
+        </div>
+        <button type="button" class="btn green" style="margin-top:8px;" onclick="confirmLoc()">✅ تأكيد الموقع</button>
+        <div id="locMsg" class="team-form-msg"></div>
+      </div>
       <button class="btn gold" id="saveTeamBtn" onclick="saveTeamData()">💾 حفظ بيانات الفريق</button>
       <div id="teamFormMsg" class="team-form-msg"></div>
     </div>
@@ -1839,7 +1879,7 @@ body.has-install-bar { padding-bottom: 80px; }
    ============================================================ */
 const REGISTER_API = "https://script.google.com/macros/s/AKfycbzuk9WJ7jJzbs61oY0YCPXrSGKvCmp5QaLamDhz-r2_TtxW-GYHWqmhaHxR8JVjcRar/exec";
 const RESERVE_API  = "https://script.google.com/macros/s/AKfycbwQdRj3hIdBtYs6ei8Zd2iaxlbSwgFqb5UZTf9L8umf8Vtk6dzCyRFtb6z_jyQfVqbeLA/exec";
-const TEAM_API     = "https://script.google.com/macros/s/AKfycbyEVzkei2njKyAiYXR-SKtJe41LCecsuEsmQCFNWcOq5BSpI0YW-wZtvmvNQG0Z8MNAdw/exec";
+const TEAM_API     = "https://script.google.com/macros/s/AKfycbyuzuYnu_ALKk8Ncc9ZJql5bpR45pT53zgxTLp0jo3yzOchwJz8AuncI33o_cNd23j_QQ/exec";
 const USER_API     = "https://script.google.com/macros/s/AKfycbzWLFdXIY0YyHOh0zT264fDPmWzBMH-Gi2Ai-2VEh9kNvbzDWd4dHRHTg-HA4ueIfIVqg/exec"; // ← رابط جديد
 const SUBS_API = "https://script.google.com/macros/s/AKfycbxH8dTH_Po3qZx45kPyDga-iJGFgmnw2lvHzy7AwzHCFL9W9aWll6UOo5aPdj1uBKSTxw/exec";
 const EXP_API = "https://script.google.com/macros/s/AKfycbz_lz2jkVm-o5OE_TrrREbHAN0NZKqcFeUXL1HiF-SkB0fxAuSgLYd6bO0ZxHBRA-ppEw/exec";
@@ -3083,6 +3123,10 @@ async function openTeamModal() {
   document.getElementById('teamClubField').value = '';
   document.getElementById('teamOldField').value = '';
  document.getElementById('cloubOldField').value = ''; 
+   teamLoc = { name: '', link: '' };
+  locTmp = null;
+  document.getElementById('locPanel').style.display = 'none';
+  renderTeamLoc();
 
   resetCirclePreview('teamLogo');
   resetCirclePreview('clubLogo');
@@ -3104,6 +3148,8 @@ async function openTeamModal() {
       document.getElementById('teamClubField').value = t.TeamCloub || '';
       document.getElementById('teamOldField').value  = t.TeamOld || '';
       document.getElementById('cloubOldField').value = t.CloubOld || ''; 
+      teamLoc = { name: t.TeamLocation || '', link: t.TeamLocationLink || '' };
+      renderTeamLoc();
 
       if (t.TeamLogo) setCirclePreview('teamLogo', t.TeamLogo);
       if (t.TeamCloubLogo) setCirclePreview('clubLogo', t.TeamCloubLogo);
@@ -3227,7 +3273,9 @@ async function saveTeamData() {
         TeamCloub: teamClub,
         TeamCloubLogo: clubLogoUrl,
         CloubOld: cloubOld,
-        TeamOld: teamOld
+        TeamOld: teamOld,
+        TeamLocation: teamLoc.name,    
+        TeamLocationLink: teamLoc.link
       })
     });
     const data = await res.json();
@@ -3242,7 +3290,9 @@ async function saveTeamData() {
         TeamCloub: teamClub,
         TeamCloubLogo: clubLogoUrl,
         CloubOld: cloubOld,
-        TeamOld: teamOld
+        TeamOld: teamOld,
+        TeamLocation: teamLoc.name,
+        TeamLocationLink: teamLoc.link
       };
 
       // حفظ الكاش وتحديث الـ splash وشعارات العنوان
@@ -7379,6 +7429,142 @@ async function mtToBase64(url, startSize, png) {
   return out;
 }
 
+/* ============================================================
+   موقع الفريق (خريطة)
+   ============================================================ */
+let teamLoc = { name: '', link: '' };
+let locMap = null, locMarker = null, locTmp = null;
+
+function renderTeamLoc() {
+  const box = document.getElementById('teamLocShow');
+  if (teamLoc.link) {
+    document.getElementById('teamLocName').textContent = teamLoc.name || 'الموقع';
+    const a = document.getElementById('teamLocLink');
+    a.href = teamLoc.link;
+    box.style.display = '';
+  } else {
+    box.style.display = 'none';
+  }
+}
+
+function clearTeamLoc() {
+  teamLoc = { name: '', link: '' };
+  renderTeamLoc();
+}
+
+function toggleLocPanel() {
+  const p = document.getElementById('locPanel');
+  if (p.style.display === 'none') {
+    p.style.display = '';
+    document.getElementById('locMsg').innerHTML = '';
+    initLocMap();
+    p.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } else {
+    p.style.display = 'none';
+  }
+}
+
+function initLocMap() {
+  if (typeof L === 'undefined') {
+    document.getElementById('locMsg').innerHTML = '<div class="error-msg">تعذّر تحميل مكتبة الخريطة (تحقق من الإنترنت)</div>';
+    return;
+  }
+  const hasSaved = teamLoc.link && /q=(-?[\d.]+),(-?[\d.]+)/.test(teamLoc.link);
+  let center = [23.5880, 58.3829], zoom = 11;   // مسقط افتراضياً
+  if (hasSaved) {
+    const m = teamLoc.link.match(/q=(-?[\d.]+),(-?[\d.]+)/);
+    center = [parseFloat(m[1]), parseFloat(m[2])]; zoom = 16;
+  }
+
+  if (!locMap) {
+    locMap = L.map('locMap').setView(center, zoom);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19, attribution: '© OpenStreetMap'
+    }).addTo(locMap);
+    locMap.on('click', e => locSetPoint(e.latlng.lat, e.latlng.lng, true));
+  } else {
+    locMap.setView(center, zoom);
+  }
+  setTimeout(() => locMap.invalidateSize(), 150);   // مهم لأن الخريطة كانت مخفية
+
+  if (hasSaved) {
+    locSetPoint(center[0], center[1], false);
+    document.getElementById('locNameInput').value = teamLoc.name || '';
+  }
+}
+
+function locSetPoint(lat, lng, reverse) {
+  locTmp = { lat, lng };
+  if (!locMarker) {
+    locMarker = L.marker([lat, lng], { draggable: true }).addTo(locMap);
+    locMarker.on('dragend', () => {
+      const p = locMarker.getLatLng();
+      locSetPoint(p.lat, p.lng, true);
+    });
+  } else {
+    locMarker.setLatLng([lat, lng]);
+  }
+  if (reverse) locReverse(lat, lng);
+}
+
+async function locReverse(lat, lng) {
+  const inp = document.getElementById('locNameInput');
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&accept-language=ar&lat=${lat}&lon=${lng}`);
+    const d = await r.json();
+    inp.value = d.name || (d.display_name || '').split(',').slice(0, 2).join('،').trim() || '';
+  } catch (e) { /* يبقى الاسم كما هو ويمكن كتابته يدوياً */ }
+}
+
+async function locSearch() {
+  const q = document.getElementById('locSearchInput').value.trim();
+  const msg = document.getElementById('locMsg');
+  if (!q) return;
+  if (!locMap) initLocMap();
+  msg.innerHTML = '';
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=ar&limit=1&q=${encodeURIComponent(q)}`);
+    const d = await r.json();
+    if (!d.length) { msg.innerHTML = '<div class="error-msg">لم يتم العثور على نتائج</div>'; return; }
+    const lat = parseFloat(d[0].lat), lng = parseFloat(d[0].lon);
+    locMap.setView([lat, lng], 16);
+    locSetPoint(lat, lng, false);
+    document.getElementById('locNameInput').value =
+      d[0].name || (d[0].display_name || '').split(',').slice(0, 2).join('،').trim();
+  } catch (e) {
+    msg.innerHTML = '<div class="error-msg">خطأ في البحث: ' + escAttr(e.message) + '</div>';
+  }
+}
+
+function locCurrent() {
+  const msg = document.getElementById('locMsg');
+  if (!navigator.geolocation) { msg.innerHTML = '<div class="error-msg">المتصفح لا يدعم تحديد الموقع</div>'; return; }
+  if (!locMap) initLocMap();
+  msg.innerHTML = '';
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const { latitude: lat, longitude: lng } = pos.coords;
+      locMap.setView([lat, lng], 17);
+      locSetPoint(lat, lng, true);
+    },
+    err => { msg.innerHTML = '<div class="error-msg">تعذّر تحديد موقعك، تأكد من السماح بالوصول للموقع</div>'; },
+    { enableHighAccuracy: true, timeout: 15000 }
+  );
+}
+
+function confirmLoc() {
+  const msg = document.getElementById('locMsg');
+  if (!locTmp) { msg.innerHTML = '<div class="error-msg">حدّد موقعاً على الخريطة أولاً</div>'; return; }
+  const lat = locTmp.lat.toFixed(6), lng = locTmp.lng.toFixed(6);
+  teamLoc = {
+    name: document.getElementById('locNameInput').value.trim() || `${lat}, ${lng}`,
+    link: `https://www.google.com/maps?q=${lat},${lng}`
+  };
+  renderTeamLoc();
+  document.getElementById('locPanel').style.display = 'none';   // إخفاء الخريطة وبياناتها
+  document.getElementById('locSearchInput').value = '';
+  msg.innerHTML = '';
+}
 
 
 
